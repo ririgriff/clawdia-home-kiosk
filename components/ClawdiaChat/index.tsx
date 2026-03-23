@@ -222,7 +222,7 @@ export default function ClawdiaChat() {
           display: isOpen ? 'none' : 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'var(--ember)',
+          background: '#a8d5a2',
         }}
         title={`${APP_NAME} Chat`}
       >
