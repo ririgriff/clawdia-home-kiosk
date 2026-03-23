@@ -11,31 +11,42 @@ Before starting, check whether `config/family.ts` exists (not just `config/famil
 If `config/family.ts` already exists, **do not run the full wizard**. Instead:
 
 1. Read `config/family.ts` and `.env.local` in full.
-2. Build a numbered status list covering every configurable area. For each item show whether it's filled in or still empty/default. For env vars, a value counts as filled if it's present and non-empty in `.env.local`. Use this format:
+
+2. For each env var that has a live test, **run the test now** if the var is filled, so the status list shows real results. Run all four tests in parallel before displaying anything. Use the same test commands defined in Phase 6:
+
+   - **MONGODB_URI** — run the Node.js `mongodb` connection test (5s timeout)
+   - **ANTHROPIC_API_KEY** — run the Node.js `@anthropic-ai/sdk` models list test
+   - **Cloudinary** — run the Node.js `cloudinary.api.ping()` test (only if all 3 vars are filled)
+   - **TAVILY_API_KEY** — run the `curl` Bearer token test
+
+3. Build a numbered status list. For env vars without a live test, show filled/not set. For env vars with a live test, show the test result:
+   - `✅ filled · ✅ connection verified` — filled and test passed
+   - `✅ filled · ❌ [error message]` — filled but test failed, show the specific error
+   - `⬜ not set` — var is missing or empty in `.env.local`
 
 ```
 Your current Clawdia configuration:
 
 HOUSEHOLD
-  1. Members         — [list names, e.g. "Alice, Bob, Helper (3 members)"] / ⬜ not set
+  1. Members          — [list names, e.g. "Alice, Bob, Helper (3 members)"] / ⬜ not set
   2. Role assignments — PRIMARY_USER: [value] · STAFF_ASSIGNEE: [value] / ⬜ not set
-  3. App name        — "[value]" / ⬜ not set
-  4. Timezone        — [value] / ⬜ not set
-  5. Mascot images   — [custom / using defaults]
-  6. AI description  — [filled / ⬜ not set]
-  7. Meal shortcuts  — [X shortcuts / none]
+  3. App name         — "[value]" / ⬜ not set
+  4. Timezone         — [value] / ⬜ not set
+  5. Mascot images    — [custom / using defaults]
+  6. AI description   — [filled / ⬜ not set]
+  7. Meal shortcuts   — [X shortcuts / none]
 
 ENVIRONMENT VARIABLES
-  8.  MONGODB_URI        — ✅ filled / ⬜ not set
-  9.  KIOSK_PIN          — ✅ filled / ⬜ not set
- 10.  ANTHROPIC_API_KEY  — ✅ filled / ⬜ not set
- 11.  AUTH_SALT          — ✅ filled / ⬜ not set
- 12.  CRON_SECRET        — ✅ filled / ⬜ not set
- 13.  Cloudinary (3 vars)— ✅ all filled / ⚠️ partial / ⬜ not set
- 14.  TAVILY_API_KEY     — ✅ filled / ⬜ not set
- 15.  AGENT_API_KEY      — ✅ filled / ⬜ not set
- 16.  ICS_FEED_URL       — ✅ filled / ⬜ not set
- 17.  ICAL_SECRET        — ✅ filled / ⬜ not set
+  8.  MONGODB_URI         — ✅ filled · ✅ connection verified / ✅ filled · ❌ [error] / ⬜ not set
+  9.  KIOSK_PIN           — ✅ filled / ⬜ not set
+ 10.  ANTHROPIC_API_KEY   — ✅ filled · ✅ connection verified / ✅ filled · ❌ [error] / ⬜ not set
+ 11.  AUTH_SALT           — ✅ filled / ⬜ not set
+ 12.  CRON_SECRET         — ✅ filled / ⬜ not set
+ 13.  Cloudinary (3 vars) — ✅ all filled · ✅ connection verified / ✅ filled · ❌ [error] / ⚠️ partial / ⬜ not set
+ 14.  TAVILY_API_KEY      — ✅ filled · ✅ connection verified / ✅ filled · ❌ [error] / ⬜ not set
+ 15.  AGENT_API_KEY       — ✅ filled / ⬜ not set
+ 16.  ICS_FEED_URL        — ✅ filled / ⬜ not set
+ 17.  ICAL_SECRET         — ✅ filled / ⬜ not set
 
 OPTIONAL FEATURES
  18. Go-Home feature   — [enabled / disabled]
