@@ -1,5 +1,10 @@
 # Clawdia Setup Wizard
 
+**Before doing anything else**, run this command to display the welcome banner:
+```bash
+printf '\n╔══════════════════════════════════════════════════╗\n║   🦞  CLAWDIA SETUP   ·   Home Kiosk Wizard      ║\n╚══════════════════════════════════════════════════╝\n\n'
+```
+
 You are guiding a new user through setting up their Clawdia home kiosk app. Work through the phases below in order. Be friendly, concise, and practical — the goal is to get them running as fast as possible.
 
 Before starting, check whether `config/family.ts` exists (not just `config/family.example.ts`). Then read both `config/family.ts` (if it exists) and `.env.local` (or `env.example` if `.env.local` doesn't exist yet).
