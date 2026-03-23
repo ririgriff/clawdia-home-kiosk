@@ -119,10 +119,10 @@ Once all members are collected, print a summary table like this:
 ```
 Name      ID        Initials  Colour     Calendar  To-do  Meal planner
 ────────  ────────  ────────  ─────────  ────────  ─────  ────────────
-Alice     alice     A         #8b5cf6    ✓         ✓      ✓
-Bob       bob       B         #0891b2    ✓         ✓      ✓
-Charlie   charlie   C         #f59e0b    ✓         ✓      ✓
-Helper    helper    H         #059669    ✓         ✓      ✗
+Alice     alice     A         #8b5cf6    ✅        ✅     ✅
+Bob       bob       B         #0891b2    ✅        ✅     ✅
+Charlie   charlie   C         #f59e0b    ✅        ✅     ✅
+Helper    helper    H         #059669    ✅        ✅     ❌
 ```
 
 Then ask: "Does this look right? If you'd like to change anyone's name, ID, initials, colour, or any of the three flags, just tell me — otherwise we'll move on."
