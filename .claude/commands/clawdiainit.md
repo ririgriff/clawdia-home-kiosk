@@ -84,7 +84,7 @@ Tell the user:
 > "Let's set up the people in your household. I'll ask about three groups:
 > - **Adults** (parents, guardians) — appear in the calendar, can be assigned to-dos, and show up in the meal planner
 > - **Children** — same as adults: in the calendar, assignable to to-dos, and in the meal planner
-> - **Supporting staff** (helper, nanny, driver, etc.) — in the calendar and assignable to to-dos, but excluded from the meal planner by default since they typically don't eat with the family
+> - **Supporting staff** (helper, nanny, driver, etc.) — in the calendar and assignable to to-dos, but are excluded from the meal planner as an "eater" as we assume that they typically don't eat with the family - but there will be an opportunity to customize later so don't worry!
 >
 > A quick note on what these mean in the app:
 > - **Calendar** — the person can be tagged as a participant on schedule events (e.g. "dentist appointment — Alice")
