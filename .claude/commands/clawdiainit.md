@@ -116,6 +116,16 @@ Assign roles automatically based on group — do not ask:
 - **Children:** `calendar: true`, `todos: true`, `mealPicker: true`, `schoolChild: false`
 - **Staff:** `calendar: true`, `todos: true`, `mealPicker: false`, `schoolChild: false`
 
+### Step 2b — Deduplicate initials
+
+After collecting all members, check for duplicate initials across the full list. If any duplicates exist:
+
+1. For each duplicate group, attempt to auto-resolve by using 2-character initials: first letter + the first letter that makes it unique (try the 2nd character of the name, then 3rd, etc.)
+2. If auto-resolution produces a unique result for everyone, apply it silently — no need to ask
+3. If there are still conflicts after attempting 2-character initials, flag them explicitly and ask the user to choose
+
+Show the resolved initials in the Step 3 summary table (not before).
+
 ### Step 3 — Summary and confirm
 
 Once all members are collected, print the flag legend followed by the summary table:
@@ -134,18 +144,37 @@ Charlie  charlie  C         #f59e0b    ✅        ✅     ✅
 Maria    staff1   M         #059669    ✅        ✅     ❌
 ```
 
-Then ask: "Does this look right? If you'd like to change anyone's name, ID, initials, colour, or any of the three flags, just tell me — otherwise we'll move on."
+Then ask:
 
-Make any requested changes and re-show the updated table before continuing.
+> "Does this look right?
+> 1. Yes, looks good — move on
+> 2. I need to make changes"
+
+If they choose 2, ask what they'd like to change. Make the changes and re-show the updated table, then ask the same question again.
 
 ---
 
 ## PHASE 2 — Role Assignments
 
-From the members with `todos: true`, ask:
+From the members with `todos: true`, ask each question **one at a time**. Present the eligible members as a numbered list so the user can reply with a number.
 
-- "Who is the **primary user** (the adult who plans meals and manages the household)?" → `PRIMARY_USER`
-- "Is there anyone else that assists the primary user with tasks shopping, school runs, daily tasks or is it still the primary user? For example, domestic **staff/helper assignee**" → `STAFF_ASSIGNEE`
+First question:
+> "Who is the **primary user** — the adult who plans meals and manages the household?
+>
+> 1. Name (ID)
+> 2. Name (ID)
+> ..."
+
+Once answered, ask the second question:
+> "Is there someone who assists with day-to-day tasks like shopping, school runs, and errands — for example a helper or staff member? Or does the primary user handle those too? (If there is more than one, choose a default — you can fine-tune which tasks go to whom later.)
+>
+> 1. Name (ID)
+> 2. Name (ID)
+> ..."
+
+Present all `todos: true` members as a numbered list (including the primary user — no need for a separate "same as primary user" option).
+
+→ First answer sets `PRIMARY_USER`, second sets `STAFF_ASSIGNEE`.
 
 If there's only one `todos: true` member, set both to that member and note it.
 If there are no `todos: true` members, skip and note that AUTO_GEN_RULES won't work yet.
@@ -156,7 +185,9 @@ If there are no `todos: true` members, skip and note that AUTO_GEN_RULES won't w
 
 Show the current defaults and ask "keep or change?" for each:
 
-- **App name:** currently `"Clawdia"` — this appears in the nav bar, PIN screen, and browser tab. Keep or change?
+- **App name:** currently `"Clawdia"` — this appears in the nav bar, PIN screen, and browser tab.
+  > 1. Keep
+  > 2. Change
 
 - **Timezone:** Run this shell command to detect the system timezone:
 
@@ -164,7 +195,11 @@ Show the current defaults and ask "keep or change?" for each:
   readlink /etc/localtime 2>/dev/null | sed 's|.*/zoneinfo/||' || cat /etc/timezone 2>/dev/null
 ```
 
-If the command returns a valid IANA timezone (e.g. `Asia/Hong_Kong`, `America/New_York`), propose that as the default. If it returns nothing or an unrecognisable value, fall back to proposing `"Asia/Hong_Kong"`. Show the detected timezone to the user and ask: "I detected your system timezone as `[detected]`. Is this the timezone your kiosk will be in? (keep or change)"
+If the command returns a valid IANA timezone (e.g. `Asia/Hong_Kong`, `America/New_York`), propose that as the default. If it returns nothing or an unrecognisable value, fall back to proposing `"Asia/Hong_Kong"`. Show the detected timezone to the user and ask:
+
+> "I detected your system timezone as `[detected]`. Is this the timezone your kiosk will be in?
+> 1. Yes, keep it
+> 2. Change it"
 
 If they want to change it, show this numbered list and ask them to pick:
 
@@ -221,7 +256,9 @@ If they want to change it, show this numbered list and ask them to pick:
 
 If they pick a number, use that IANA string. If they type a timezone directly, use it as-is.
 
-- **Mascot images:** currently using the Clawdia cat images in `public/`. Keep the defaults for now or customise?
+- **Mascot images:** currently using the default Clawdia lobster images in `public/`.
+  > 1. Keep the defaults
+  > 2. Customise with my own images
 
   If customising:
   1. Ask the user to drop their two replacement PNGs into `public/` and tell you the filenames (e.g. `mymascot-face.png`, `mymascot-full.png`).
@@ -251,7 +288,11 @@ Using the members defined in Phase 1, auto-generate a `FAMILY_DESCRIPTION` in th
 
 Base the role descriptions on their flags: adults with `todos: true` → likely parents/primary users, `schoolChild: true` → child, members with no `mealPicker`/`todos` but `calendar: true` → might be a pet, `todos: true` but no `calendar` → likely staff.
 
-Show the generated description and ask: "This gets injected into the AI chat so Clawdia knows your household. Does this look right, or would you like to adjust any descriptions?"
+Show the generated description and ask:
+
+> "This gets injected into the AI chat so Clawdia knows your household.
+> 1. Looks good — move on
+> 2. I'd like to adjust some descriptions"
 
 ---
 
@@ -265,7 +306,12 @@ From the `mealPicker: true` members, auto-generate sensible defaults:
 - If everyone is an adult: just "Everyone"
 - Adjust if the household has a helper who is also a mealPicker
 
-Show the generated shortcuts and say: "These are optional quick-select buttons in the meal planner — the app works fine without them. Accept, adjust, or skip?"
+Show the generated shortcuts and say:
+
+> "These are optional quick-select buttons in the meal planner — the app works fine without them.
+> 1. Accept
+> 2. Adjust
+> 3. Skip (no shortcuts)"
 
 If they skip, set `MEAL_SHORTCUTS = []`.
 
@@ -391,7 +437,7 @@ Skip for now and come back later? Or set up now?"
 
 ### Auto-todo rules
 
-Show the full list of default rules concisely:
+Show the full list of default rules. For each rule, the assignee defaults to either `PRIMARY_USER` or `STAFF_ASSIGNEE` as shown — but if the household has multiple staff members with different responsibilities, offer to let them assign each rule individually.
 
 ```
 1. [pickup]         Pick up {{schoolChild}} from school          → STAFF_ASSIGNEE  (fires on pickup days — only if Go-Home enabled)
@@ -408,6 +454,13 @@ Show the full list of default rules concisely:
 Tell them: "Rules 1–2 only fire if Go-Home is enabled. Rules 7–8 (pay staff) are probably only relevant if you have a household helper. You can always edit or add rules later in `config/family.ts`. Keep all, or remove any?"
 
 If they want to remove some, remove those entries from `AUTO_GEN_RULES`. If they want to add a custom rule, help them define it.
+
+**If the household has more than one staff member** (i.e. multiple members with `todos: true` who are not adults), ask: "You have multiple staff members — would you like to assign specific rules to specific people, or keep the defaults?"
+
+- If yes: go through each rule that currently points to `STAFF_ASSIGNEE` and ask who should handle it, presenting the `todos: true` members as a numbered list
+- If no: leave the defaults as-is (`STAFF_ASSIGNEE` for all staff-type rules)
+
+Any rule assignee can be any `TodoAssignee` — the `assignee` field in `AUTO_GEN_RULES` accepts any member with `todos: true`, not just `PRIMARY_USER` or `STAFF_ASSIGNEE`.
 
 ---
 

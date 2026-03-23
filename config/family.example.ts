@@ -194,7 +194,15 @@ export const SCHOOL_CHILD = MEMBERS.find((m) => m.schoolChild)!
 /** The assignee who plans meals (Saturday auto-todo). Must have todos: true in MEMBERS. */
 export const PRIMARY_USER: TodoAssignee = "alice";
 
-/** The assignee who handles shopping and school pick-ups. Must have todos: true in MEMBERS. */
+/**
+ * The default assignee for operational tasks (shopping, school pick-ups, etc.).
+ * Must have todos: true in MEMBERS.
+ *
+ * If you have multiple staff with different responsibilities, you can override
+ * the assignee on individual rules in AUTO_GEN_RULES below — any TodoAssignee
+ * is valid there. STAFF_ASSIGNEE is used as the fallback for rules that don't
+ * specify their own assignee.
+ */
 export const STAFF_ASSIGNEE: TodoAssignee = "helper";
 
 // ─── Meal shortcuts ───────────────────────────────────────────────────────────
