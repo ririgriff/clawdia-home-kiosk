@@ -54,11 +54,14 @@ export default function PinPage() {
   async function verify(currentPin: string) {
     setLoading(true)
     setError('')
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 8000)
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pin: currentPin }),
+        signal: controller.signal,
       })
 
       if (res.ok) {
@@ -67,10 +70,12 @@ export default function PinPage() {
         return
       }
 
-      let data: { lockedUntil?: string; attemptsLeft?: number } = {}
+      let data: { lockedUntil?: string; attemptsLeft?: number; error?: string } = {}
       try { data = await res.json() } catch { /* non-JSON error body */ }
 
-      if (res.status === 429 || data.lockedUntil) {
+      if (res.status === 503) {
+        setError(data.error ?? 'Database connection failed')
+      } else if (res.status === 429 || data.lockedUntil) {
         setLockedUntil(new Date(data.lockedUntil!))
         setError('Too many incorrect attempts.')
         setAttemptsLeft(null)
@@ -78,9 +83,14 @@ export default function PinPage() {
         setAttemptsLeft(data.attemptsLeft ?? null)
         setError('Incorrect PIN')
       }
-    } catch {
-      setError('Connection error. Please try again.')
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setError('Database unreachable — check your MongoDB Atlas IP whitelist')
+      } else {
+        setError('Connection error. Please try again.')
+      }
     } finally {
+      clearTimeout(timer)
       setLoading(false)
       setPin('')
     }

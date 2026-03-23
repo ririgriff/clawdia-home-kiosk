@@ -22,11 +22,27 @@ async function computeToken(pin: string): Promise<string> {
     .join('')
 }
 
+function classifyMongoError(err: unknown): string {
+  if (!(err instanceof Error)) return 'Database connection failed'
+  const msg = err.message
+  if (err.name === 'MongoParseError') return 'Invalid MONGODB_URI — check the format in your environment variables'
+  if (msg.includes('bad auth') || msg.includes('Authentication failed')) return 'Wrong credentials in MONGODB_URI — check your username and password'
+  if (msg.includes('ENOTFOUND') || msg.includes('getaddrinfo')) return 'MongoDB cluster not found — check the hostname in MONGODB_URI'
+  return 'Database unreachable — check your MongoDB Atlas IP whitelist'
+}
+
 export async function POST(request: NextRequest) {
   const { pin } = await request.json()
   const ip = getIP(request)
 
-  await connectDB()
+  try {
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('CONNECT_TIMEOUT')), 5000)
+    )
+    await Promise.race([connectDB(), timeout])
+  } catch (err) {
+    return NextResponse.json({ error: classifyMongoError(err) }, { status: 503 })
+  }
 
   // ── Check if currently locked out ────────────────────────────────────────
   const record = await RateLimit.findOne({ ip })
