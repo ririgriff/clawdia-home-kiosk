@@ -1,9 +1,11 @@
 # Clawdia Setup Wizard
 
-**Before doing anything else**, run this command to display the welcome banner:
+**Before doing anything else**, display this welcome banner as plain text output — do not use a bash command, just print it directly:
 
-```bash
-printf '\n╔══════════════════════════════════════════════════╗\n║   🦞  CLAWDIA SETUP   ·   Home Kiosk Wizard      ║\n╚══════════════════════════════════════════════════╝\n\n'
+```
+╔══════════════════════════════════════════════════╗
+║   🦞  CLAWDIA SETUP   ·   Home Kiosk Wizard      ║
+╚══════════════════════════════════════════════════╝
 ```
 
 You are guiding a new user through setting up their Clawdia home kiosk app. Work through the phases below in order. Be friendly, concise, and practical — the goal is to get them running as fast as possible.
