@@ -179,13 +179,48 @@ Tell the user: "Now let's set up your API keys and secrets. I'll generate the ra
 
 3. **ANTHROPIC\_API\_KEY** — "Paste your Anthropic API key (starts with `sk-ant-`). Get one at console.anthropic.com → API Keys."
 
+   Once the user pastes the key, test it immediately:
+   ```bash
+   TEST_KEY="<their key>" node -e "const Anthropic = require('@anthropic-ai/sdk'); const client = new Anthropic({ apiKey: process.env.TEST_KEY }); client.models.list().then(() => console.log('OK')).catch(err => { console.error(err.status + ': ' + err.message); process.exit(1); });"
+   ```
+   Interpret the result:
+   - `OK` → "✅ Anthropic API key valid!"
+   - `401` → "❌ Invalid API key — check you copied it in full from console.anthropic.com."
+   - `403` → "❌ Key doesn't have the right permissions — check it's an API key, not an OAuth token."
+   - Network error → "❌ Couldn't reach Anthropic API — check your internet connection."
+
+   Do not proceed until the test passes (or the user explicitly asks to skip).
+
 4. **AUTH\_SALT** and **CRON\_SECRET** — "I'll generate these for you." Run `openssl rand -hex 32` twice and show the values. Tell the user: "These will be saved to your `.env.local` file — you'll need to copy them from there when you add environment variables to Vercel in Step 3 of the README."
 
 ### Recommended (explain why, offer skip):
 
 5. **Cloudinary** (dish photo uploads) — "Cloudinary lets you upload photos for dishes in the meal planner from your computer or by providing a URL. Without it, the upload button won't work — you can still use the app, but dish cards won't have photos (it looks MUCH better with beautiful photos!). Setting it up takes about 2 minutes at cloudinary.com (free plan). Set up now or skip for later?" If setting up: ask for `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
 
+   Once all three are provided, test them immediately:
+   ```bash
+   CLOUD_NAME="<cloud_name>" CLOUD_KEY="<api_key>" CLOUD_SECRET="<api_secret>" node -e "const cloudinary = require('cloudinary').v2; cloudinary.config({ cloud_name: process.env.CLOUD_NAME, api_key: process.env.CLOUD_KEY, api_secret: process.env.CLOUD_SECRET }); cloudinary.api.ping().then(() => console.log('OK')).catch(err => { console.error(err.message || JSON.stringify(err)); process.exit(1); });"
+   ```
+   Interpret the result:
+   - `OK` → "✅ Cloudinary credentials valid!"
+   - `Must supply api_key` or `Must supply cloud_name` → "❌ One of the three values is missing or blank."
+   - `Invalid API key` or `401` → "❌ API key or secret is wrong — double-check them in your Cloudinary dashboard under Settings → API Keys."
+   - Cloud name error → "❌ Cloud name not found — check the cloud name in the top-left of your Cloudinary dashboard."
+
+   Do not proceed until the test passes (or the user explicitly asks to skip).
+
 6. **Tavily** (recipe web search) — "Tavily powers the recipe web search in the Add Dish drawer and AI chat — it lets Clawdia find recipes on the web for you just using the name of the dish. Free plan gives 1,000 searches/month. Worth doing now if you can as it saves a lot of time and enables you to populate your recipe book quickly - you can always go back to manually edit the recipes or put in your own in due course. Set up now or skip for later?" If setting up: ask for `TAVILY_API_KEY`. Get it at tavily.com.
+
+   Once the user pastes the key, test it immediately:
+   ```bash
+   TEST_KEY="<their key>" curl -s -o /dev/null -w "%{http_code}" -X POST "https://api.tavily.com/search" -H "Content-Type: application/json" -H "Authorization: Bearer $TEST_KEY" -d '{"query":"test","max_results":1}'
+   ```
+   Interpret the HTTP status code:
+   - `200` → "✅ Tavily API key valid!"
+   - `401` or `403` → "❌ Invalid API key — check you copied it correctly from tavily.com."
+   - `000` or network error → "❌ Couldn't reach Tavily API — check your internet connection."
+
+   Do not proceed until the test passes (or the user explicitly asks to skip).
 
 ### Optional (mention briefly, suggest skipping for now):
 
