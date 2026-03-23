@@ -2,9 +2,58 @@
 
 You are guiding a new user through setting up their Clawdia home kiosk app. Work through the phases below in order. Be friendly, concise, and practical — the goal is to get them running as fast as possible.
 
-Before starting, read the current state of `config/family.ts` and `.env.local` (or `env.example` if `.env.local` doesn't exist yet) so you know what's already in place.
+Before starting, check whether `config/family.ts` exists (not just `config/family.example.ts`). Then read both `config/family.ts` (if it exists) and `.env.local` (or `env.example` if `.env.local` doesn't exist yet).
 
-Tell the user: "Welcome to Clawdia setup! I'll walk you through configuring your household. This should take about 10 minutes. Let's go phase by phase — you can always come back and change anything later."
+---
+
+## RETURNING USER — config already exists
+
+If `config/family.ts` already exists, **do not run the full wizard**. Instead:
+
+1. Read `config/family.ts` and `.env.local` in full.
+2. Build a numbered status list covering every configurable area. For each item show whether it's filled in or still empty/default. For env vars, a value counts as filled if it's present and non-empty in `.env.local`. Use this format:
+
+```
+Your current Clawdia configuration:
+
+HOUSEHOLD
+  1. Members         — [list names, e.g. "Alice, Bob, Helper (3 members)"] / ⬜ not set
+  2. Role assignments — PRIMARY_USER: [value] · STAFF_ASSIGNEE: [value] / ⬜ not set
+  3. App name        — "[value]" / ⬜ not set
+  4. Timezone        — [value] / ⬜ not set
+  5. Mascot images   — [custom / using defaults]
+  6. AI description  — [filled / ⬜ not set]
+  7. Meal shortcuts  — [X shortcuts / none]
+
+ENVIRONMENT VARIABLES
+  8.  MONGODB_URI        — ✅ filled / ⬜ not set
+  9.  KIOSK_PIN          — ✅ filled / ⬜ not set
+ 10.  ANTHROPIC_API_KEY  — ✅ filled / ⬜ not set
+ 11.  AUTH_SALT          — ✅ filled / ⬜ not set
+ 12.  CRON_SECRET        — ✅ filled / ⬜ not set
+ 13.  Cloudinary (3 vars)— ✅ all filled / ⚠️ partial / ⬜ not set
+ 14.  TAVILY_API_KEY     — ✅ filled / ⬜ not set
+ 15.  AGENT_API_KEY      — ✅ filled / ⬜ not set
+ 16.  ICS_FEED_URL       — ✅ filled / ⬜ not set
+ 17.  ICAL_SECRET        — ✅ filled / ⬜ not set
+
+OPTIONAL FEATURES
+ 18. Go-Home feature   — [enabled / disabled]
+ 19. ICS calendar sync — [configured / ⬜ not set]
+ 20. Auto-todo rules   — [X rules active]
+```
+
+3. Then ask: **"What would you like to update? Enter a number (or multiple numbers separated by commas), or type 'all' to run the full setup wizard from the beginning."**
+
+4. Jump directly to the relevant phase(s) for whatever they select. When done with each selected item, re-show the updated status list and ask if there's anything else to change.
+
+5. If they type `all`, proceed to PHASE 1 below as if it's a first-time setup.
+
+---
+
+## FIRST-TIME USER — no config yet
+
+If `config/family.ts` does not exist, tell the user: "Welcome to Clawdia setup! I'll walk you through configuring your household. This should take about 10 minutes. Let's go phase by phase — you can always come back and change anything later."
 
 ---
 
