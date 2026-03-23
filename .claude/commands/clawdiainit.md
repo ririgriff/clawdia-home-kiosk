@@ -1,6 +1,7 @@
 # Clawdia Setup Wizard
 
 **Before doing anything else**, run this command to display the welcome banner:
+
 ```bash
 printf '\n╔══════════════════════════════════════════════════╗\n║   🦞  CLAWDIA SETUP   ·   Home Kiosk Wizard      ║\n╚══════════════════════════════════════════════════╝\n\n'
 ```
@@ -18,7 +19,6 @@ If `config/family.ts` already exists, **do not run the full wizard**. Instead:
 1. Read `config/family.ts` and `.env.local` in full.
 
 2. For each env var that has a live test, **run the test now** if the var is filled, so the status list shows real results. Run all four tests in parallel before displaying anything. Use the same test commands defined in Phase 6:
-
    - **MONGODB_URI** — run the Node.js `mongodb` connection test (5s timeout)
    - **ANTHROPIC_API_KEY** — run the Node.js `@anthropic-ai/sdk` models list test
    - **Cloudinary** — run the Node.js `cloudinary.api.ping()` test (only if all 3 vars are filled)
@@ -84,14 +84,10 @@ Tell the user:
 > "⚠️ **Before we start — a quick heads up:** Most of Clawdia's settings are easy to change later. This phase is the exception. The member IDs you set here get stored in the database alongside every calendar event, to-do, and meal plan entry you create. If you rename or change an ID after data has accumulated, you'll need to run a database migration to update all the existing records. So it's worth taking a moment to get this right — don't worry, I'll guide you through it."
 
 > "Let's set up the people in your household. I'll ask about three groups:
+>
 > - **Adults** (parents, guardians) — appear in the calendar, can be assigned to-dos, and show up in the meal planner
 > - **Children** — same as adults: in the calendar, assignable to to-dos, and in the meal planner
 > - **Supporting staff** (helper, nanny, driver, etc.) — in the calendar and assignable to to-dos, but are excluded from the meal planner as an "eater" as we assume that they typically don't eat with the family - but there will be an opportunity to customize later so don't worry!
->
-> A quick note on what these mean in the app:
-> - **Calendar** — the person can be tagged as a participant on schedule events (e.g. "dentist appointment — Alice")
-> - **To-do** — the person can be assigned tasks (e.g. "Pick up Charlie — Helper")
-> - **Meal planner** — the person appears in the 'who's eating' selector when planning meals
 >
 > We'll fine-tune any of this after if needed."
 
@@ -107,27 +103,33 @@ Then ask all three in a single message:
 
 Once you have the counts, collect details for each person **by group** (all adults first, then children, then staff). For each person ask in a single message:
 
-1. **Name** — display name (e.g. "Alice", "Helper")
-2. **ID** — suggest a short lowercase slug from the name (e.g. `alice`, `helper`). Tell the user: "This is stored in the database — it's permanent unless you run a data migration, so keep it simple."
+1. **Name** — display name (e.g. "Alice", "Maria")
+2. **ID** — for adults and children, suggest a short lowercase slug from the name (e.g. `alice`). For staff, always assign `staff1`, `staff2`, etc. regardless of their name — explain: "I'm using `staff1` as the ID rather than their name. This means if your staff ever changes, you just update the name, initials, and colour — no database migration needed."
 3. **Initials** — suggest 1–2 chars from the name
 4. **Colour** — suggest one from this palette based on what's not yet taken: purple `#8b5cf6`, teal `#4a7c6f`, sky `#0891b2`, amber `#f59e0b`, green `#059669`, rose `#e11d48`, orange `#ea580c`, pink `#db2777`
 
 Assign roles automatically based on group — do not ask:
+
 - **Adults:** `calendar: true`, `todos: true`, `mealPicker: true`, `schoolChild: false`
 - **Children:** `calendar: true`, `todos: true`, `mealPicker: true`, `schoolChild: false`
 - **Staff:** `calendar: true`, `todos: true`, `mealPicker: false`, `schoolChild: false`
 
 ### Step 3 — Summary and confirm
 
-Once all members are collected, print a summary table like this:
+Once all members are collected, print the flag legend followed by the summary table:
+
+> **What the flags mean:**
+> - **Calendar** ✅ — can be tagged as a participant on schedule events (e.g. "dentist — Alice")
+> - **To-do** ✅ — can be assigned tasks (e.g. "Pick up Charlie — staff1")
+> - **Meal planner** ✅ — appears in the 'who's eating' selector when planning meals
 
 ```
-Name      ID        Initials  Colour     Calendar  To-do  Meal planner
-────────  ────────  ────────  ─────────  ────────  ─────  ────────────
-Alice     alice     A         #8b5cf6    ✅        ✅     ✅
-Bob       bob       B         #0891b2    ✅        ✅     ✅
-Charlie   charlie   C         #f59e0b    ✅        ✅     ✅
-Helper    helper    H         #059669    ✅        ✅     ❌
+Name     ID       Initials  Colour     Calendar  To-do  Meal planner
+───────  ───────  ────────  ─────────  ────────  ─────  ────────────
+Alice    alice    A         #8b5cf6    ✅        ✅     ✅
+Bob      bob      B         #0891b2    ✅        ✅     ✅
+Charlie  charlie  C         #f59e0b    ✅        ✅     ✅
+Maria    staff1   M         #059669    ✅        ✅     ❌
 ```
 
 Then ask: "Does this look right? If you'd like to change anyone's name, ID, initials, colour, or any of the three flags, just tell me — otherwise we'll move on."
@@ -141,7 +143,7 @@ Make any requested changes and re-show the updated table before continuing.
 From the members with `todos: true`, ask:
 
 - "Who is the **primary user** (the adult who plans meals and manages the household)?" → `PRIMARY_USER`
-- "Is there anyone else that assists the primary user with tasks shopping, school runs, daily tasks or is it still the primary user?  For example, domestic **staff/helper assignee**" → `STAFF_ASSIGNEE`
+- "Is there anyone else that assists the primary user with tasks shopping, school runs, daily tasks or is it still the primary user? For example, domestic **staff/helper assignee**" → `STAFF_ASSIGNEE`
 
 If there's only one `todos: true` member, set both to that member and note it.
 If there are no `todos: true` members, skip and note that AUTO_GEN_RULES won't work yet.
@@ -155,12 +157,14 @@ Show the current defaults and ask "keep or change?" for each:
 - **App name:** currently `"Clawdia"` — this appears in the nav bar, PIN screen, and browser tab. Keep or change?
 
 - **Timezone:** Run this shell command to detect the system timezone:
+
 ```bash
   readlink /etc/localtime 2>/dev/null | sed 's|.*/zoneinfo/||' || cat /etc/timezone 2>/dev/null
 ```
-  If the command returns a valid IANA timezone (e.g. `Asia/Hong_Kong`, `America/New_York`), propose that as the default. If it returns nothing or an unrecognisable value, fall back to proposing `"Asia/Hong_Kong"`. Show the detected timezone to the user and ask: "I detected your system timezone as `[detected]`. Is this the timezone your kiosk will be in? (keep or change)"
 
-  If they want to change it, show this numbered list and ask them to pick:
+If the command returns a valid IANA timezone (e.g. `Asia/Hong_Kong`, `America/New_York`), propose that as the default. If it returns nothing or an unrecognisable value, fall back to proposing `"Asia/Hong_Kong"`. Show the detected timezone to the user and ask: "I detected your system timezone as `[detected]`. Is this the timezone your kiosk will be in? (keep or change)"
+
+If they want to change it, show this numbered list and ask them to pick:
 
 ```
   Asia
@@ -213,7 +217,7 @@ Show the current defaults and ask "keep or change?" for each:
   37. UTC
 ```
 
-  If they pick a number, use that IANA string. If they type a timezone directly, use it as-is.
+If they pick a number, use that IANA string. If they type a timezone directly, use it as-is.
 
 - **Mascot images:** currently using the Clawdia cat images in `public/`. Keep the defaults for now or customise?
 
@@ -254,6 +258,7 @@ Show the generated description and ask: "This gets injected into the AI chat so 
 Shortcuts are optional convenience buttons in the meal eaters picker (e.g. tap "Adults" instead of tapping each adult individually). The app works fine with an empty list — users can always select eaters one by one.
 
 From the `mealPicker: true` members, auto-generate sensible defaults:
+
 - If there are adults + children: "Adults" (non-schoolChild mealPickers), "Kids" (schoolChild mealPickers), "Everyone" (all mealPickers)
 - If everyone is an adult: just "Everyone"
 - Adjust if the household has a helper who is also a mealPicker
@@ -270,9 +275,10 @@ Tell the user: "Now let's set up your API keys and secrets. I'll generate the ra
 
 ### Required (ask one at a time):
 
-1. **MONGODB\_URI** — "Paste your MongoDB Atlas connection string. Format: `mongodb+srv://user:password@cluster.mongodb.net/home-kiosk?retryWrites=true&w=majority`. If you haven't created a cluster yet, go to cloud.mongodb.com → free M0 cluster → Connect → Drivers."
+1. **MONGODB_URI** — "Paste your MongoDB Atlas connection string. Format: `mongodb+srv://user:password@cluster.mongodb.net/home-kiosk?retryWrites=true&w=majority`. If you haven't created a cluster yet, go to cloud.mongodb.com → free M0 cluster → Connect → Drivers."
 
    Once the user pastes the URI, immediately test it by running this command (substituting their URI):
+
    ```bash
    node -e "
    const { MongoClient } = require('mongodb');
@@ -282,7 +288,9 @@ Tell the user: "Now let's set up your API keys and secrets. I'll generate the ra
      .catch(err => { console.error(err.name + ': ' + err.message); process.exit(1); });
    " 2>&1
    ```
+
    Set `TEST_URI` to their value via the environment so it isn't logged to the shell. Run it as:
+
    ```bash
    TEST_URI="<their URI>" node -e "const { MongoClient } = require('mongodb'); const client = new MongoClient(process.env.TEST_URI, { serverSelectionTimeoutMS: 5000 }); client.connect().then(() => { console.log('OK'); client.close(); }).catch(err => { console.error(err.name + ': ' + err.message); process.exit(1); });"
    ```
@@ -296,14 +304,16 @@ Tell the user: "Now let's set up your API keys and secrets. I'll generate the ra
 
    Do not proceed to the next env var until the connection test passes (or the user explicitly asks to skip).
 
-2. **KIOSK\_PIN** — "Choose a 6-digit PIN for your household. Everyone who uses the kiosk will enter this. (Must be exactly 6 digits — the PIN screen is hardcoded to 6.)"
+2. **KIOSK_PIN** — "Choose a 6-digit PIN for your household. Everyone who uses the kiosk will enter this. (Must be exactly 6 digits — the PIN screen is hardcoded to 6.)"
 
-3. **ANTHROPIC\_API\_KEY** — "Paste your Anthropic API key (starts with `sk-ant-`). Get one at console.anthropic.com → API Keys."
+3. **ANTHROPIC_API_KEY** — "Paste your Anthropic API key (starts with `sk-ant-`). Get one at console.anthropic.com → API Keys."
 
    Once the user pastes the key, test it immediately:
+
    ```bash
    TEST_KEY="<their key>" node -e "const Anthropic = require('@anthropic-ai/sdk'); const client = new Anthropic({ apiKey: process.env.TEST_KEY }); client.models.list().then(() => console.log('OK')).catch(err => { console.error(err.status + ': ' + err.message); process.exit(1); });"
    ```
+
    Interpret the result:
    - `OK` → "✅ Anthropic API key valid!"
    - `401` → "❌ Invalid API key — check you copied it in full from console.anthropic.com."
@@ -312,16 +322,18 @@ Tell the user: "Now let's set up your API keys and secrets. I'll generate the ra
 
    Do not proceed until the test passes (or the user explicitly asks to skip).
 
-4. **AUTH\_SALT** and **CRON\_SECRET** — "I'll generate these for you." Run `openssl rand -hex 32` twice and show the values. Tell the user: "These will be saved to your `.env.local` file — you'll need to copy them from there when you add environment variables to Vercel in Step 3 of the README."
+4. **AUTH_SALT** and **CRON_SECRET** — "I'll generate these for you." Run `openssl rand -hex 32` twice and show the values. Tell the user: "These will be saved to your `.env.local` file — you'll need to copy them from there when you add environment variables to Vercel in Step 3 of the README."
 
 ### Recommended (explain why, offer skip):
 
 5. **Cloudinary** (dish photo uploads) — "Cloudinary lets you upload photos for dishes in the meal planner from your computer or by providing a URL. Without it, the upload button won't work — you can still use the app, but dish cards won't have photos (it looks MUCH better with beautiful photos!). Setting it up takes about 2 minutes at cloudinary.com (free plan). Set up now or skip for later?" If setting up: ask for `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
 
    Once all three are provided, test them immediately:
+
    ```bash
    CLOUD_NAME="<cloud_name>" CLOUD_KEY="<api_key>" CLOUD_SECRET="<api_secret>" node -e "const cloudinary = require('cloudinary').v2; cloudinary.config({ cloud_name: process.env.CLOUD_NAME, api_key: process.env.CLOUD_KEY, api_secret: process.env.CLOUD_SECRET }); cloudinary.api.ping().then(() => console.log('OK')).catch(err => { console.error(err.message || JSON.stringify(err)); process.exit(1); });"
    ```
+
    Interpret the result:
    - `OK` → "✅ Cloudinary credentials valid!"
    - `Must supply api_key` or `Must supply cloud_name` → "❌ One of the three values is missing or blank."
@@ -333,9 +345,11 @@ Tell the user: "Now let's set up your API keys and secrets. I'll generate the ra
 6. **Tavily** (recipe web search) — "Tavily powers the recipe web search in the Add Dish drawer and AI chat — it lets Clawdia find recipes on the web for you just using the name of the dish. Free plan gives 1,000 searches/month. Worth doing now if you can as it saves a lot of time and enables you to populate your recipe book quickly - you can always go back to manually edit the recipes or put in your own in due course. Set up now or skip for later?" If setting up: ask for `TAVILY_API_KEY`. Get it at tavily.com.
 
    Once the user pastes the key, test it immediately:
+
    ```bash
    TEST_KEY="<their key>" curl -s -o /dev/null -w "%{http_code}" -X POST "https://api.tavily.com/search" -H "Content-Type: application/json" -H "Authorization: Bearer $TEST_KEY" -d '{"query":"test","max_results":1}'
    ```
+
    Interpret the HTTP status code:
    - `200` → "✅ Tavily API key valid!"
    - `401` or `403` → "❌ Invalid API key — check you copied it correctly from tavily.com."
@@ -346,6 +360,7 @@ Tell the user: "Now let's set up your API keys and secrets. I'll generate the ra
 ### Optional (mention briefly, suggest skipping for now):
 
 Tell the user: "The following are for optional features — I'd recommend skipping these for now and coming back once your system is up and running:"
+
 - `ICS_FEED_URL` — for importing an external calendar (Google/Outlook). Covered in Phase 7.
 - `ICAL_SECRET` — only needed if you want external apps to subscribe to your kiosk calendar. Skip for now.
 - `AGENT_API_KEY` — only needed for OpenClaw/WhatsApp integration (Step 5 in the README). Skip for now.
