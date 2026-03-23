@@ -93,10 +93,13 @@ Tell the user:
 >
 > We'll fine-tune any of this after if needed."
 
-Then ask:
-- "How many **adults** are in your household?"
-- "How many **children**?"
-- "How many **supporting staff** members (helper, nanny, driver, etc.)? (0 if none)"
+Then ask all three in a single message:
+
+> "How many people are in each group? Reply with three numbers on one line, e.g. `2 adults, 1 child, 1 staff` — or just `2, 1, 1` if you prefer."
+>
+> - Adults (parents, guardians)?
+> - Children?
+> - Supporting staff (helper, nanny, driver, etc.)? — 0 if none
 
 ### Step 2 — Collect names and details
 
