@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* ── Stone palette: warm grays sourced from the product's world ── */
+@theme inline {
+  /* Remap gray-* to stone scale — warm without being brown */
+  --color-gray-50:  #fafaf9;
+  --color-gray-100: #f5f3f0;
+  --color-gray-200: #e7e5e4;
+  --color-gray-300: #d6d3d1;
+  --color-gray-400: #a8a29e;
+  --color-gray-500: #78716c;
+  --color-gray-600: #57534e;
+  --color-gray-700: #44403c;
+  --color-gray-800: #292524;
+  --color-gray-900: #1c1917;
+  --color-gray-950: #0c0a09;
+
+  /* Typography */
+  --font-sans:    var(--font-manrope), 'Manrope', system-ui, sans-serif;
+  --font-display: var(--font-fraunces), 'Fraunces', Georgia, serif;
+}
+
+/* ── Semantic design tokens ── */
+:root {
+  --parchment:   #ede9e6;   /* deepest canvas (pin page bg) */
+  --parchment-2: #f5f3f0;   /* main background */
+  --parchment-3: #ffffff;   /* raised surface (nav, drawers, modals) */
+  --parchment-4: #fafaf9;   /* cards, dish tiles */
+  --parchment-5: #ede9e6;   /* inset inputs */
+
+  --ink:   #1c1917;         /* primary text */
+  --ink-2: #44403c;         /* secondary text */
+  --ink-3: #78716c;         /* muted text / labels */
+  --ink-4: #a8a29e;         /* placeholder */
+
+  --border:        rgba(28, 25, 23, 0.08);
+  --border-strong: rgba(28, 25, 23, 0.14);
+  --border-dashed: rgba(28, 25, 23, 0.22);
+
+  --ember:   #ea580c;       /* terracotta — primary action */
+  --ember-2: #c2410c;       /* ember hover */
+  --ember-bg: rgba(234, 88, 12, 0.10);
+
+  --sage:   #4a7c6f;        /* today indicator */
+  --sage-bg: rgba(74, 124, 111, 0.12);
+}
+
+body {
+  background: var(--parchment-2);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Scrollbars ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--parchment-2); }
+::-webkit-scrollbar-thumb { background: var(--border-dashed); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Display font utility ── */
+.font-display {
+  font-family: var(--font-display);
+}

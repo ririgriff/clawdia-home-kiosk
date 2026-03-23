@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/todos",
+      "schedule": "0 22 * * *"
+    },
+    {
+      "path": "/api/cron/ics-sync",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}
