@@ -81,6 +81,8 @@ If `config/family.ts` does not exist, tell the user: "Welcome to Clawdia setup! 
 
 Tell the user:
 
+> "⚠️ **Before we start — a quick heads up:** Most of Clawdia's settings are easy to change later. This phase is the exception. The member IDs you set here get stored in the database alongside every calendar event, to-do, and meal plan entry you create. If you rename or change an ID after data has accumulated, you'll need to run a database migration to update all the existing records. So it's worth taking a moment to get this right — don't worry, I'll guide you through it."
+
 > "Let's set up the people in your household. I'll ask about three groups:
 > - **Adults** (parents, guardians) — appear in the calendar, can be assigned to-dos, and show up in the meal planner
 > - **Children** — same as adults: in the calendar, assignable to to-dos, and in the meal planner
