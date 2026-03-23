@@ -151,6 +151,30 @@ Tell the user: "Now let's set up your API keys and secrets. I'll generate the ra
 
 1. **MONGODB\_URI** — "Paste your MongoDB Atlas connection string. Format: `mongodb+srv://user:password@cluster.mongodb.net/home-kiosk?retryWrites=true&w=majority`. If you haven't created a cluster yet, go to cloud.mongodb.com → free M0 cluster → Connect → Drivers."
 
+   Once the user pastes the URI, immediately test it by running this command (substituting their URI):
+   ```bash
+   node -e "
+   const { MongoClient } = require('mongodb');
+   const client = new MongoClient(process.env.TEST_URI, { serverSelectionTimeoutMS: 5000 });
+   client.connect()
+     .then(() => { console.log('OK'); client.close(); })
+     .catch(err => { console.error(err.name + ': ' + err.message); process.exit(1); });
+   " 2>&1
+   ```
+   Set `TEST_URI` to their value via the environment so it isn't logged to the shell. Run it as:
+   ```bash
+   TEST_URI="<their URI>" node -e "const { MongoClient } = require('mongodb'); const client = new MongoClient(process.env.TEST_URI, { serverSelectionTimeoutMS: 5000 }); client.connect().then(() => { console.log('OK'); client.close(); }).catch(err => { console.error(err.name + ': ' + err.message); process.exit(1); });"
+   ```
+
+   Interpret the result and tell the user:
+   - Output is `OK` → "✅ MongoDB connection successful!"
+   - `MongoParseError` → "❌ URI format looks wrong — check for typos in the connection string."
+   - `bad auth` or `Authentication failed` → "❌ Wrong username or password in the URI — double-check your Atlas database user credentials."
+   - `ENOTFOUND` or `getaddrinfo` → "❌ Cluster hostname not found — check that you copied the full URI correctly from Atlas."
+   - Timeout / `Server selection timed out` → "❌ Connection timed out — your current IP is probably not whitelisted. Go to MongoDB Atlas → Network Access → Add IP Address → Add Current IP Address, then try again."
+
+   Do not proceed to the next env var until the connection test passes (or the user explicitly asks to skip).
+
 2. **KIOSK\_PIN** — "Choose a 6-digit PIN for your household. Everyone who uses the kiosk will enter this. (Must be exactly 6 digits — the PIN screen is hardcoded to 6.)"
 
 3. **ANTHROPIC\_API\_KEY** — "Paste your Anthropic API key (starts with `sk-ant-`). Get one at console.anthropic.com → API Keys."
