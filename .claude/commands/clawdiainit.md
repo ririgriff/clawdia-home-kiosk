@@ -75,23 +75,59 @@ If `config/family.ts` does not exist, tell the user: "Welcome to Clawdia setup! 
 
 ## PHASE 1 — Household Members ⚠️ (take your time here)
 
-**This is the most important phase.** Member IDs get stored in the database — every calendar event, to-do, and meal entry will reference them. Changing IDs later requires a data migration, so it's worth getting them right now.
+**This is the most important phase.** Member IDs get stored in the database — every calendar event, to-do, and meal entry will reference them. Changing IDs later requires a data migration, so it's worth getting right now.
 
-Start by explaining this to the user, then collect members one at a time. For each person, ask:
+### Step 1 — Explain and count
 
-1. **Name** — their display name (e.g. "Alice", "Helper", "Mochi the cat")
-2. **ID** — a short lowercase slug, no spaces (suggest one from the name, e.g. "alice", "helper", "mochi"). Remind them: this is permanent unless they migrate data.
-3. **Initials** — 1–2 chars, suggest from the name
-4. **Colour** — suggest a hex colour, or offer a small palette: purple `#8b5cf6`, teal `#4a7c6f`, sky `#0891b2`, amber `#f59e0b`, green `#059669`, rose `#e11d48`, orange `````````````#ea580c`
-5. **Roles** — ask these as a group (they can answer all at once), if not sure then just set true for everything and schoolChild as false:
-  - `calendar` — should this person appear as a participant in calendar events?
-  - `todos` — should this person be assignable to to-do items?
-  - `mealPicker` — should this person appear in the meal eaters selector?
-  - `schoolChild` — is this a school-age child whose home transport you want to track? (note: currently supports one school child)
+Tell the user:
 
-After each member, ask: "Anyone else to add? (yes / done)"
+> "Let's set up the people in your household. I'll ask about three groups:
+> - **Adults** (parents, guardians) — appear in the calendar, can be assigned to-dos, and show up in the meal planner
+> - **Children** — same as adults: in the calendar, assignable to to-dos, and in the meal planner
+> - **Supporting staff** (helper, nanny, driver, etc.) — in the calendar and assignable to to-dos, but excluded from the meal planner by default since they typically don't eat with the family
+>
+> A quick note on what these mean in the app:
+> - **Calendar** — the person can be tagged as a participant on schedule events (e.g. "dentist appointment — Alice")
+> - **To-do** — the person can be assigned tasks (e.g. "Pick up Charlie — Helper")
+> - **Meal planner** — the person appears in the 'who's eating' selector when planning meals
+>
+> We'll fine-tune any of this after if needed."
 
-Once all members are collected, print a clean summary table and ask: "Does this look right before I continue?"
+Then ask:
+- "How many **adults** are in your household?"
+- "How many **children**?"
+- "How many **supporting staff** members (helper, nanny, driver, etc.)? (0 if none)"
+
+### Step 2 — Collect names and details
+
+Once you have the counts, collect details for each person **by group** (all adults first, then children, then staff). For each person ask in a single message:
+
+1. **Name** — display name (e.g. "Alice", "Helper")
+2. **ID** — suggest a short lowercase slug from the name (e.g. `alice`, `helper`). Tell the user: "This is stored in the database — it's permanent unless you run a data migration, so keep it simple."
+3. **Initials** — suggest 1–2 chars from the name
+4. **Colour** — suggest one from this palette based on what's not yet taken: purple `#8b5cf6`, teal `#4a7c6f`, sky `#0891b2`, amber `#f59e0b`, green `#059669`, rose `#e11d48`, orange `#ea580c`, pink `#db2777`
+
+Assign roles automatically based on group — do not ask:
+- **Adults:** `calendar: true`, `todos: true`, `mealPicker: true`, `schoolChild: false`
+- **Children:** `calendar: true`, `todos: true`, `mealPicker: true`, `schoolChild: false`
+- **Staff:** `calendar: true`, `todos: true`, `mealPicker: false`, `schoolChild: false`
+
+### Step 3 — Summary and confirm
+
+Once all members are collected, print a summary table like this:
+
+```
+Name      ID        Initials  Colour     Calendar  To-do  Meal planner
+────────  ────────  ────────  ─────────  ────────  ─────  ────────────
+Alice     alice     A         #8b5cf6    ✓         ✓      ✓
+Bob       bob       B         #0891b2    ✓         ✓      ✓
+Charlie   charlie   C         #f59e0b    ✓         ✓      ✓
+Helper    helper    H         #059669    ✓         ✓      ✗
+```
+
+Then ask: "Does this look right? If you'd like to change anyone's name, ID, initials, colour, or any of the three flags, just tell me — otherwise we'll move on."
+
+Make any requested changes and re-show the updated table before continuing.
 
 ---
 
