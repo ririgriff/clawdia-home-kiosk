@@ -169,7 +169,22 @@ Show the current defaults and ask "keep or change?" for each:
 
   If they pick a number, use that IANA string. If they type a timezone directly, use it as-is.
 
-- **Mascot images:** currently using the Clawdia cat images in `public/`. Keep the defaults for now or customise? (If customising: drop replacement PNGs into `public/` and provide the paths — this can easily be done any time after setup.)
+- **Mascot images:** currently using the Clawdia cat images in `public/`. Keep the defaults for now or customise?
+
+  If customising:
+  1. Ask the user to drop their two replacement PNGs into `public/` and tell you the filenames (e.g. `mymascot-face.png`, `mymascot-full.png`).
+  2. Update `MASCOT_FACE` and `MASCOT_FULL` in `config/family.ts` to point to the new files (e.g. `/mymascot-face.png`).
+  3. Back up the default app icon before overwriting it:
+     ```bash
+     cp app/icon.png app/icon.default.png
+     ```
+  4. Generate the three favicon files from their full image:
+     ```bash
+     cp public/<their-full-image>.png public/favicon.png
+     sips --resampleHeightWidth 32 32 public/<their-full-image>.png --out public/favicon-32.png
+     sips --resampleHeightWidth 32 32 public/<their-full-image>.png --out app/icon.png
+     ```
+  5. Tell the user: "✅ Favicons updated. To revert to Clawdia defaults at any time: `cp app/icon.default.png app/icon.png`, copy `clawdia-full.png` back to `favicon.png` and `favicon-32.png`, and update `MASCOT_FACE`/`MASCOT_FULL` in `config/family.ts`."
 
 ---
 

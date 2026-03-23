@@ -14,6 +14,17 @@ The app name is set in `APP_NAME` in `config/family.ts` — read that file first
 
 `config/family.ts` is gitignored (private). The public repo ships `config/family.example.ts` with generic placeholder data. A `predev`/`prebuild` script auto-copies `family.example.ts` → `family.ts` on a fresh clone.
 
+**Mascot & favicons:** If `MASCOT_FULL` is changed to a custom image, regenerate the three favicon files from the new full image. Always back up the default icon first if `app/icon.default.png` doesn't already exist:
+```bash
+# Back up default (once only)
+cp app/icon.png app/icon.default.png
+# Regenerate favicons from the new full image
+cp public/<new-full-image>.png public/favicon.png
+sips --resampleHeightWidth 32 32 public/<new-full-image>.png --out public/favicon-32.png
+sips --resampleHeightWidth 32 32 public/<new-full-image>.png --out app/icon.png
+```
+To revert to Clawdia defaults: `cp app/icon.default.png app/icon.png` and copy `clawdia-full.png` back to `favicon.png` / `favicon-32.png`.
+
 ---
 
 ## Touch Screen Rules (CRITICAL)

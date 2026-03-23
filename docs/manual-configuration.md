@@ -16,8 +16,8 @@ Both files are well-commented with inline documentation. This guide provides add
 The app name appears in the nav bar, PIN screen, browser tab, and AI Chat greeting. The mascot is a small character image displayed alongside the name.
 
 You need two image files placed in the `public/` folder:
-- **Nav bar mascot** (`MASCOT_FACE`) — 36×36 pixels
-- **PIN screen mascot** (`MASCOT_FULL`) — 160×160 pixels
+- **Nav bar mascot** (`MASCOT_FACE`) — ideally square, displayed at 36×36px
+- **PIN screen mascot** (`MASCOT_FULL`) — ideally square, displayed at 160×160px
 
 **In \****`config/family.ts`**\*\*:**
 ```ts
@@ -25,6 +25,32 @@ export const APP_NAME = "Your App Name";
 export const MASCOT_FACE = "/your-mascot-face.png";
 export const MASCOT_FULL = "/your-mascot-full.png";
 ```
+
+### Updating favicons to match your mascot
+
+After changing `MASCOT_FULL`, regenerate the three favicon files so the browser tab icon matches. The default Clawdia favicons are preserved so you can always revert.
+
+**Step 1 — back up the default app icon** (one-time, skip if `app/icon.default.png` already exists):
+```bash
+cp app/icon.png app/icon.default.png
+```
+
+**Step 2 — generate favicons from your full image:**
+```bash
+cp public/your-mascot-full.png public/favicon.png
+sips --resampleHeightWidth 32 32 public/your-mascot-full.png --out public/favicon-32.png
+sips --resampleHeightWidth 32 32 public/your-mascot-full.png --out app/icon.png
+```
+
+> `sips` is built into macOS. On Linux, use `convert` from ImageMagick: `convert public/your-mascot-full.png -resize 32x32 public/favicon-32.png`
+
+**To revert to Clawdia defaults:**
+```bash
+cp app/icon.default.png app/icon.png
+cp public/clawdia-full.png public/favicon.png
+sips --resampleHeightWidth 32 32 public/clawdia-full.png --out public/favicon-32.png
+```
+Then set `MASCOT_FACE = "/clawdia-face.png"` and `MASCOT_FULL = "/clawdia-full.png"` in `config/family.ts`.
 
 ---
 
