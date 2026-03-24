@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useDroppable } from '@dnd-kit/core'
+import { useDroppable, useDraggable } from '@dnd-kit/core'
 import { Plus, Eye, Trash2, X } from 'lucide-react'
 import { IMealPlanEntry, MealSlot } from '@/lib/types'
 import { getMemberInitials, getMemberColor } from '@/config/family'
@@ -62,10 +62,15 @@ function DishCard({ entry, onRemove, onUpdate }: { entry: IMealPlanEntry; onRemo
   const eaters = entry.eaters ?? []
   const [showActions, setShowActions] = useState(false)
   const [showView, setShowView] = useState(false)
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: entry._id,
+    data: { entryId: entry._id },
+  })
 
   return (
-    <div className="flex-1 flex items-stretch rounded-xl overflow-hidden relative min-h-0 cursor-pointer"
-      style={{ background: 'var(--parchment-3)', border: '1px solid var(--border)' }}
+    <div ref={setNodeRef} {...listeners} {...attributes}
+      className="flex-1 flex items-stretch rounded-xl overflow-hidden relative min-h-0 cursor-pointer"
+      style={{ background: 'var(--parchment-3)', border: '1px solid var(--border)', opacity: isDragging ? 0.4 : 1 }}
       onClick={() => { if (!showView) setShowActions(true) }}>
 
       {/* Photo */}
