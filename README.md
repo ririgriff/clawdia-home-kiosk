@@ -270,6 +270,7 @@ To keep upstream merges clean, **avoid editing these files directly** unless you
 | `config/family.ts` | Everything household-specific — members, colours, rules, AI description |
 | `.env.local`       | Secrets and API keys                                                    |
 | `public/`          | Mascot images and any static assets                                     |
+| `CLAUDE.md`        | Claude Code instructions — the technical rules apply to all forks, but the **Documentation & Git Workflow** section is specific to the public repo. Customize or replace that section for your own setup. |
 
 ---
 

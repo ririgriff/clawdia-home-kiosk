@@ -201,13 +201,16 @@ An in-app AI chatbot mounted globally in `app/layout.tsx`. Full details in `docs
 
 ---
 
-## Documentation & Git Workflow
+## Documentation & Git Workflow *(customize this section for your own setup)*
 
-**After completing any meaningful feature or fix, always do all three steps without waiting to be asked:**
+> This section reflects how the **Clawdia public repo** is maintained. If you are running your own private fork, replace it with whatever workflow suits you — or remove it entirely if you prefer to manage commits and docs yourself.
+
+**After completing any meaningful feature or fix, always do all four steps without waiting to be asked:**
 
 1. Update the relevant `docs/*.md` file for any changed module
-2. Commit with a concise message describing what changed and why
-3. Push to GitHub (`git push`)
+2. Update `CHANGELOG.md` — add an entry under `[Unreleased]` describing what changed. Use `⚠️ Action Required` for any new env vars, `family.ts` schema changes, or manual migration steps users must perform after pulling.
+3. Commit with a concise message describing what changed and why
+4. Push to GitHub (`git push`)
 
 ### Module docs — update when their module changes
 
