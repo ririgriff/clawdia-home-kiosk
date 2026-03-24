@@ -19,6 +19,7 @@
   - [Step 4: Set up the Hardware](#step-4--set-up-the-hardware)
   - [Step 5 (Optional): Integration with OpenClaw](#step-5-optional--integration-with-openclaw-or-any-external-ai-agent)
 - **Future Maintenance & Security**
+  - [Documentation reference](#documentation-reference)
   - [Pulling updates from Clawdia public repo](#pulling-updates-from-clawdia-public-repo)
   - [Optional security hardening](#optional-security-hardening)
 
@@ -186,6 +187,14 @@ For a detailed walkthrough of every option, see the [manual-configuration.md](./
 
 > **Auto-deploy:** Once your GitHub repo is linked, every `git push` to your main branch will automatically trigger a new Vercel deployment. No manual deploys needed — just push your changes and the live app updates within a couple of minutes.
 
+### Troubleshooting common Vercel issues
+
+**App loads but features don't work / API errors after setup**
+Environment variables added or changed in Vercel do not take effect until you redeploy. Go to your Vercel project dashboard → **Deployments** → click the three-dot menu on the latest deployment → **Redeploy**.
+
+**App can't connect to MongoDB / blank data / 500 errors**
+MongoDB Atlas requires you to whitelist the IPs that are allowed to connect. During setup, set the Network Access to `0.0.0.0/0` (allow all IPs) — this is necessary because Vercel uses dynamic outbound IPs. If you skipped this step, go to **MongoDB Atlas → Network Access → Add IP Address → Allow Access from Anywhere**. See the [security hardening](#optional-security-hardening) section if you want to restrict this later.
+
 ---
 
 ## STEP 4: Set up the Hardware
@@ -243,6 +252,22 @@ Agent API calls are authenticated with a Bearer token (`AGENT_API_KEY`). Items a
 ---
 
 # Future Maintenance & Security Settings
+
+## Documentation reference
+
+The `docs/` folder contains detailed reference material for each part of the app:
+
+| File | Contents |
+| ---- | -------- |
+| `docs/manual-configuration.md` | Step-by-step configuration guide for users who prefer to edit files directly rather than using the `/clawdiainit` Claude Code wizard |
+| `docs/system-architecture.md` | Full system overview — API routes, data models, authentication, external services, and environment variables |
+| `docs/meals-module.md` | Meal planner data model, API patterns, and UX decisions |
+| `docs/schedule-module.md` | Calendar, recurring events, ICS sync, and Go Home feature |
+| `docs/todo-module.md` | To-do list, assignees, auto-generated todos, and cron behaviour |
+| `docs/links-module.md` | Saved links feature |
+| `docs/ai-chat.md` | In-app AI chat — tools, voice input, and agent integration |
+
+---
 
 ## Pulling updates from Clawdia public repo
 
