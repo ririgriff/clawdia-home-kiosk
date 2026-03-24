@@ -4,7 +4,7 @@
 
 ## **Customize with Claude Code, interact via OpenClaw**
 
-> **Live demo:** [clawdia-demo.vercel.app](https://clawdia-demo.vercel.app/) — PIN: `123456` (dummy data, resets periodically)
+> **Live demo:** [clawdia-demo.vercel.app](https://clawdia-demo.vercel.app/) — PIN: `123456` (dummy data, resets periodically, AI APIs calls are capped)
 
 ## Table of Contents
 
@@ -38,7 +38,7 @@ Because the entire app — including all its data and logic — is open and acce
 The app is named **Clawdia** as it was built from ground up to be used with Claude Code and OpenClaw. You can rename it and replace the mascot images to make it your own.
 
 > _Creator's Note: This started as a project for myself. I was spending so much time as the go between between school, kids, staff... I wanted a system that those in my family who do not have their own devices (staff, kids) can also iteract with. _
-> _I first considered off-the-shelf systems but they many used proprietary hardware and software without APIs for external AI agents to connect, control and manipulate. I didn't want to invest a lot of time and money into a system that is not AI-native. With proprietary systems, I would inevitably end up spending a lot of time populating content manually (like the recipe book) vs. being able to use AI to automate or end up in a place where the software just cannot provide a level of customization that would make it truly useful to my household. So I started Clawdia. This is a work in progress but am happy to share it for others in the same boat!_
+> _I first considered off-the-shelf systems but they many used proprietary hardware and software without APIs for external AI agents to connect, control and manipulate. I didn't want to invest a lot of time and money into a system that is not AI-native. With proprietary systems, I would inevitably end up spending a lot of time populating content manually (like the recipe book) vs. being able to use AI to automate or end up in a place where the software just cannot provide a level of customization that would make it truly useful to my household. So I started Clawdia. This is a work in progress but am happy to share it!_
 
 ---
 
@@ -141,7 +141,7 @@ Once installed, open your terminal, navigate to the project directory, and start
 
 ```bash
 cd ~/Projects/clawdia
-claude
+claude --dangerously-skip-permissions
 ```
 
 Then run the built-in setup skill:
@@ -189,13 +189,15 @@ For a detailed walkthrough of every option, see the [manual-configuration.md](./
 
 > **Auto-deploy:** Once your GitHub repo is linked, every `git push` to your main branch will automatically trigger a new Vercel deployment. No manual deploys needed — just push your changes and the live app updates within a couple of minutes.
 
-### Troubleshooting common Vercel issues
+### Troubleshooting common issues
 
 **App loads but features don't work / API errors after setup**
-Environment variables added or changed in Vercel do not take effect until you redeploy. Go to your Vercel project dashboard → **Deployments** → click the three-dot menu on the latest deployment → **Redeploy**.
+
+- Environment variables added or changed in Vercel do not take effect until you redeploy. Go to your Vercel project dashboard → **Deployments** → click the three-dot menu on the latest deployment → **Redeploy**.
+- If you push environment variables from env.local to Vercel using Vercel CLI, sometimes it appends a trailing space - need to go delete those.
 
 **App can't connect to MongoDB / blank data / 500 errors**
-MongoDB Atlas requires you to whitelist the IPs that are allowed to connect. During setup, set the Network Access to `0.0.0.0/0` (allow all IPs) — this is necessary because Vercel uses dynamic outbound IPs. If you skipped this step, go to **MongoDB Atlas → Network Access → Add IP Address → Allow Access from Anywhere**. See the [security hardening](#optional-security-hardening) section if you want to restrict this later.
+MongoDB Atlas requires you to whitelist the IPs that are allowed to connect. During setup, set the Network Access to `0.0.0.0/0` (allow all IPs) — this is necessary because free Vercel uses dynamic outbound IPs. If you skipped this step, go to **MongoDB Atlas → Network Access → Add IP Address → Allow Access from Anywhere**. See the [security hardening](#optional-security-hardening) section if you want to restrict this later.
 
 ---
 
@@ -213,7 +215,7 @@ Once you've verified the app is working in a browser, set it up on your Portable
 
 **Set up motion wake** _(optional but recommended)_ — under **Settings → Motion Detection**, enable **Motion Detection to Activate Screen**. This uses the tablet's front camera to wake the screen when someone walks by
 
-## Clawdia is ready!
+## 🦞Clawdia🦞 is ready!
 
 ---
 
@@ -259,21 +261,22 @@ Agent API calls are authenticated with a Bearer token (`AGENT_API_KEY`). Items a
 
 The `docs/` folder contains detailed reference material for each part of the app:
 
-| File | Contents |
-| ---- | -------- |
+| File                           | Contents                                                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `docs/manual-configuration.md` | Step-by-step configuration guide for users who prefer to edit files directly rather than using the `/clawdiainit` Claude Code wizard |
-| `docs/system-architecture.md` | Full system overview — API routes, data models, authentication, external services, and environment variables |
-| `docs/meals-module.md` | Meal planner data model, API patterns, and UX decisions |
-| `docs/schedule-module.md` | Calendar, recurring events, ICS sync, and Go Home feature |
-| `docs/todo-module.md` | To-do list, assignees, auto-generated todos, and cron behaviour |
-| `docs/links-module.md` | Saved links feature |
-| `docs/ai-chat.md` | In-app AI chat — tools, voice input, and agent integration |
+| `docs/system-architecture.md`  | Full system overview — API routes, data models, authentication, external services, and environment variables                         |
+| `docs/meals-module.md`         | Meal planner data model, API patterns, and UX decisions                                                                              |
+| `docs/schedule-module.md`      | Calendar, recurring events, ICS sync, and Go Home feature                                                                            |
+| `docs/todo-module.md`          | To-do list, assignees, auto-generated todos, and cron behaviour                                                                      |
+| `docs/links-module.md`         | Saved links feature                                                                                                                  |
+| `docs/ai-chat.md`              | In-app AI chat — tools, voice input, and agent integration                                                                           |
 
 ---
 
 ## Pulling updates from Clawdia public repo
 
-Whenever the public repo has new features:
+[WORK IN PROGRESS!! Still learning how to maintain a public repo]
+Whenever the public repo has new bug fixes / features:
 
 ```bash
 git fetch upstream
@@ -292,11 +295,11 @@ To keep upstream merges clean, **avoid editing these files directly** unless you
 | `middleware.ts`          | PIN auth — only change if you know what you're doing                     |
 | `vercel.json`            | Cron schedule — safe to edit, low conflict risk                          |
 
-| File               | What it controls                                                        |
-| ------------------ | ----------------------------------------------------------------------- |
-| `config/family.ts` | Everything household-specific — members, colours, rules, AI description |
-| `.env.local`       | Secrets and API keys                                                    |
-| `public/`          | Mascot images and any static assets                                     |
+| File               | What it controls                                                                                                                                                                                          |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config/family.ts` | Everything household-specific — members, colours, rules, AI description                                                                                                                                   |
+| `.env.local`       | Secrets and API keys                                                                                                                                                                                      |
+| `public/`          | Mascot images and any static assets                                                                                                                                                                       |
 | `CLAUDE.md`        | Claude Code instructions — the technical rules apply to all forks, but the **Documentation & Git Workflow** section is specific to the public repo. Customize or replace that section for your own setup. |
 
 ---
