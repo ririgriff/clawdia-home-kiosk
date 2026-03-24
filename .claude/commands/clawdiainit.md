@@ -534,4 +534,6 @@ After writing, print a clear summary:
 
 Then tell them:
 
-"Both files are ready. **Head back to the README and continue from Step 3** to commit your config, deploy to Vercel, and finish setting up your kiosk."
+"🎉 **Congratulations — you've completed the hardest part of the setup!** Your household is configured, your API keys are in place, and both files are ready to go. From here it's mostly clicking buttons in Vercel. You're very close to having your kiosk up and running!
+
+**Head back to the README and continue from Step 3** to commit your config, deploy to Vercel, and finish setting up your kiosk."
