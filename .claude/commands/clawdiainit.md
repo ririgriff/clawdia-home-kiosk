@@ -325,22 +325,10 @@ Tell the user: "Now let's set up your API keys and secrets. I'll generate the ra
 
 1. **MONGODB_URI** — "Paste your MongoDB Atlas connection string. Format: `mongodb+srv://user:password@cluster.mongodb.net/home-kiosk?retryWrites=true&w=majority`. If you haven't created a cluster yet, go to cloud.mongodb.com → free M0 cluster → Connect → Drivers."
 
-   Once the user pastes the URI, immediately test it by running this command (substituting their URI):
+   Once the user pastes the URI, immediately test it by running this command (substituting their URI). Run from a temp directory so it doesn't depend on the project's `node_modules`:
 
    ```bash
-   node -e "
-   const { MongoClient } = require('mongodb');
-   const client = new MongoClient(process.env.TEST_URI, { serverSelectionTimeoutMS: 5000 });
-   client.connect()
-     .then(() => { console.log('OK'); client.close(); })
-     .catch(err => { console.error(err.name + ': ' + err.message); process.exit(1); });
-   " 2>&1
-   ```
-
-   Set `TEST_URI` to their value via the environment so it isn't logged to the shell. Run it as:
-
-   ```bash
-   TEST_URI="<their URI>" node -e "const { MongoClient } = require('mongodb'); const client = new MongoClient(process.env.TEST_URI, { serverSelectionTimeoutMS: 5000 }); client.connect().then(() => { console.log('OK'); client.close(); }).catch(err => { console.error(err.name + ': ' + err.message); process.exit(1); });"
+   TEST_DIR=$(mktemp -d) && cd "$TEST_DIR" && npm init -y --quiet > /dev/null 2>&1 && npm install mongodb --quiet > /dev/null 2>&1 && TEST_URI="<their URI>" node -e "const { MongoClient } = require('mongodb'); const client = new MongoClient(process.env.TEST_URI, { serverSelectionTimeoutMS: 5000 }); client.connect().then(() => { console.log('OK'); client.close(); }).catch(err => { console.error(err.name + ': ' + err.message); process.exit(1); });" ; cd - > /dev/null ; rm -rf "$TEST_DIR"
    ```
 
    Interpret the result and tell the user:
@@ -356,10 +344,10 @@ Tell the user: "Now let's set up your API keys and secrets. I'll generate the ra
 
 3. **ANTHROPIC_API_KEY** — "Paste your Anthropic API key (starts with `sk-ant-`). Get one at console.anthropic.com → API Keys."
 
-   Once the user pastes the key, test it immediately:
+   Once the user pastes the key, test it immediately from a temp directory:
 
    ```bash
-   TEST_KEY="<their key>" node -e "const Anthropic = require('@anthropic-ai/sdk'); const client = new Anthropic({ apiKey: process.env.TEST_KEY }); client.models.list().then(() => console.log('OK')).catch(err => { console.error(err.status + ': ' + err.message); process.exit(1); });"
+   TEST_DIR=$(mktemp -d) && cd "$TEST_DIR" && npm init -y --quiet > /dev/null 2>&1 && npm install @anthropic-ai/sdk --quiet > /dev/null 2>&1 && TEST_KEY="<their key>" node -e "const Anthropic = require('@anthropic-ai/sdk'); const client = new Anthropic({ apiKey: process.env.TEST_KEY }); client.models.list().then(() => console.log('OK')).catch(err => { console.error(err.status + ': ' + err.message); process.exit(1); });" ; cd - > /dev/null ; rm -rf "$TEST_DIR"
    ```
 
    Interpret the result:
@@ -376,10 +364,10 @@ Tell the user: "Now let's set up your API keys and secrets. I'll generate the ra
 
 5. **Cloudinary** (dish photo uploads) — "Cloudinary lets you upload photos for dishes in the meal planner from your computer or by providing a URL. Without it, the upload button won't work — you can still use the app, but dish cards won't have photos (it looks MUCH better with beautiful photos!). Setting it up takes about 2 minutes at cloudinary.com (free plan). Set up now or skip for later?" If setting up: ask for `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
 
-   Once all three are provided, test them immediately:
+   Once all three are provided, test them immediately from a temp directory:
 
    ```bash
-   CLOUD_NAME="<cloud_name>" CLOUD_KEY="<api_key>" CLOUD_SECRET="<api_secret>" node -e "const cloudinary = require('cloudinary').v2; cloudinary.config({ cloud_name: process.env.CLOUD_NAME, api_key: process.env.CLOUD_KEY, api_secret: process.env.CLOUD_SECRET }); cloudinary.api.ping().then(() => console.log('OK')).catch(err => { console.error(err.message || JSON.stringify(err)); process.exit(1); });"
+   TEST_DIR=$(mktemp -d) && cd "$TEST_DIR" && npm init -y --quiet > /dev/null 2>&1 && npm install cloudinary --quiet > /dev/null 2>&1 && CLOUD_NAME="<cloud_name>" CLOUD_KEY="<api_key>" CLOUD_SECRET="<api_secret>" node -e "const cloudinary = require('cloudinary').v2; cloudinary.config({ cloud_name: process.env.CLOUD_NAME, api_key: process.env.CLOUD_KEY, api_secret: process.env.CLOUD_SECRET }); cloudinary.api.ping().then(() => console.log('OK')).catch(err => { console.error(err.message || JSON.stringify(err)); process.exit(1); });" ; cd - > /dev/null ; rm -rf "$TEST_DIR"
    ```
 
    Interpret the result:
@@ -419,12 +407,56 @@ Tell the user: "The following are for optional features — I'd recommend skippi
 
 ### Go-Home feature
 
-Explain: "Clawdia has a built-in 'Go Home' feature designed for this scenario: you have a school-age child who either takes a school bus or needs to be picked up, and which one depends on the day's schedule. When enabled, a banner appears on the dashboard and weekly calendar showing how your child is getting home that day — it looks at their calendar events and applies rules (e.g. if an event ends after 4pm, it auto-switches to Pickup). You can override the default per-day from a settings page.
+Explain the feature as follows:
 
-Does your household have a similar situation — a child whose home transport varies day-to-day and you want the app to track it? Or would you like to skip this for now?"
+> "⚠️ **Heads up — this feature is highly opinionated.** It was built specifically for the creator's household and may not fit yours. I'd recommend skipping it unless you're curious to explore how it works, or your situation happens to match closely.
+>
+> **What it does:** When enabled, a banner appears on the home dashboard and weekly calendar each school day showing how your child is getting home — automatically calculated from their calendar events. It also drives two auto-generated to-dos:
+> - **'Pick up [child] from school'** → assigned to your staff/helper on days when pickup is needed
+> - **'Accompany [child] to [appointment]'** → assigned to your staff/helper when the child has an appointment event
+>
+> **The scenario it was built for:**
+> - The school runs **two rounds of buses** — one at 3pm and one at 4pm
+> - Activities ending after 4pm mean the child misses both buses and must be picked up
+> - The school has a **registered default pickup arrangement** — any deviation from that default requires the parent to inform the school in advance
+> - The app tracks the default and flags when something different is happening
+>
+> The logic works through this checklist each day:
+> 1. Weekend or holiday → no banner
+> 2. Child has an appointment event → **Pickup**
+> 3. Child's last event ends after the pickup cutoff (e.g. 16:10) → **Pickup** (too late for any bus)
+> 4. Child's last event ends after the late-bus cutoff (e.g. 15:10) → **Bus 4pm** (missed the 3pm bus)
+> 5. Otherwise → the weekday default you've configured
+>
+> Does this match your situation? Or would you like to skip for now?"
 
-- If **yes**: collect `SCHOOL_NAME`, `SCHOOL_PORTAL_URL`, `GO_HOME_PICKUP_AFTER` (default `"16:10"`), `GO_HOME_BUS_LATE_AFTER` (default `"15:10"`), and `FALLBACK_HOME_DEFAULTS` per weekday (Mon–Fri). Set `ENABLE_GO_HOME = true`.
-- If **no/skip**: set `ENABLE_GO_HOME = false`. Tell them: "No problem — this is fully off. You can enable it anytime by editing `config/family.ts` and reading `docs/manual-configuration.md`."
+Present as:
+> 1. Yes, this matches my situation — set it up
+> 2. Skip for now
+
+- If **yes**:
+  1. Ask which child is the school child (numbered list of children from Phase 1) — set `schoolChild: true` on that member
+  2. Ask how many bus rounds the school has:
+     > "How many rounds of school buses does your school run?
+     > 1. One round (after which the child must be picked up)
+     > 2. Two rounds (e.g. 3pm and 4pm — after the second, pickup is needed)"
+  3. Ask for `SCHOOL_NAME` (e.g. "ABC Primary")
+  4. Ask for `SCHOOL_PORTAL_URL` — tell them it's optional (used to link to the school portal when informing the school of changes). They can skip if not relevant.
+  5. If **one bus round**: only ask for one cutoff time (`GO_HOME_PICKUP_AFTER`, default `"15:10"`). Set `GO_HOME_BUS_LATE_AFTER` equal to `GO_HOME_PICKUP_AFTER` (effectively disabling the 4pm bus logic). Weekday defaults will only offer `bus` or `pickup`.
+  6. If **two bus rounds**: ask for both cutoff times:
+     - `GO_HOME_BUS_LATE_AFTER` — if last event ends after this, child takes the late bus (default `"15:10"`)
+     - `GO_HOME_PICKUP_AFTER` — if last event ends after this, child must be picked up (default `"16:10"`)
+  7. Ask for `FALLBACK_HOME_DEFAULTS` per weekday (Mon–Fri):
+     > "What is [child]'s **regular schedule** for getting home — assuming no deviations or special activities? Enter one number per day, Mon to Fri, separated by commas.
+     >
+     > 1. bus-3pm *(or just 'bus' if one round)*
+     > 2. bus-4pm *(only shown if two rounds)*
+     > 3. pickup
+     >
+     > e.g. `1,1,2,1,1` means bus Mon/Tue/Thu/Fri, late bus Wed"
+  8. Set `ENABLE_GO_HOME = true`
+
+- If **no/skip**: set `ENABLE_GO_HOME = false`. Tell them: "No problem — fully off by default. You can enable it anytime by editing `config/family.ts` and reading `docs/manual-configuration.md`."
 
 ### ICS Calendar Sync
 
