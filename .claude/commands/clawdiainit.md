@@ -507,26 +507,31 @@ Now write both files based on everything collected:
 After writing, print a clear summary:
 
 ```
-✅ Configured
-  - X household members
+✅ Setup complete! Here's what was configured:
+
+  config/family.ts
+  - X household members: [names]
   - App name: [name]
   - Timezone: [tz]
-  - Cloudinary: [set up / skipped]
-  - Tavily: [set up / skipped]
-  - Go-Home: [enabled / disabled]
-  - ICS sync: [set up / skipped]
-  - Auto-todo rules: X rules active
+  - PRIMARY_USER: [name] · STAFF_ASSIGNEE: [name]
+  - Mascot: [custom / Clawdia defaults]
+  - Go-Home: [enabled ([child], [N] bus round(s), cutoff [time]) / disabled]
+  - ICS sync: [configured / not set up]
+  - Auto-todo rules: X active
+
+  .env.local
+  - MONGODB_URI: ✅
+  - KIOSK_PIN: ✅
+  - ANTHROPIC_API_KEY: ✅
+  - AUTH_SALT: ✅
+  - CRON_SECRET: ✅
+  - Cloudinary: [✅ / ⏭️ skipped]
+  - Tavily: [✅ / ⏭️ skipped]
 
 ⏭️ Skipped for later
-  - [list of skipped items with one-line reminder of where to configure]
+  - [list only items that were skipped, one line each with the env var name]
 ```
 
 Then tell them:
 
-"You're ready to deploy! Next steps:
-
-1. Commit your config: `git add config/family.ts .env.local && git commit -m 'init: family config and env vars'`
-2. Push to your private repo: `git push`
-3. Follow Step 3 in the README to deploy to Vercel — add your `.env.local` variables to Vercel's environment settings before deploying.
-
-Once deployed, come back to the README for Steps 4 and 5 to set up the hardware and optional OpenClaw integration."
+"Both files are ready. **Head back to the README and continue from Step 3** to commit your config, deploy to Vercel, and finish setting up your kiosk."
