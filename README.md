@@ -4,6 +4,8 @@
 
 ## **Customize with Claude Code, interact via OpenClaw**
 
+> **Live demo:** [clawdia-demo.vercel.app](https://clawdia-demo.vercel.app/) — PIN: `123456` (dummy data, resets periodically)
+
 ## Table of Contents
 
 - [What is Clawdia?](#what-is-clawdia)
