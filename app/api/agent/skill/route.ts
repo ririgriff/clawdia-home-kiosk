@@ -355,6 +355,7 @@ Required: \`dish_id\`, \`date\` (YYYY-MM-DD), \`slot\` (breakfast / lunch / snac
 Optional: \`eaters\` (array of member IDs: ${MEAL_MEMBERS.map(m => m.id).join(', ')} — defaults to [])
 
 \`typically_served\` is an array of meal slots: \`breakfast\`, \`lunch\`, \`snack\`, \`dinner\`
+\`recipe\` is a plain-text string of numbered cooking steps — always populate this when submitting a dish
 \`ingredients\` is an array of \`{ name, quantity, unit }\`
 
 ### Taxonomy (use exactly these values)
