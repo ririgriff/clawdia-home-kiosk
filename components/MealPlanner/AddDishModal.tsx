@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { X, Sparkles, Loader2, Plus, Trash2, Link, Check, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
+import { X, Sparkles, Loader2, Plus, Trash2, Check, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
 import { IDish, Ingredient, MealSlot, MEAL_SLOTS } from '@/lib/types'
 import { MEAL_MEMBERS } from '@/config/family'
 import { updateCategoryColors } from '@/lib/categoryColors'
@@ -346,6 +346,11 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
     color: '#fff',
     border: '1px solid transparent',
   }
+  const aiBtnStyle = {
+    background: 'var(--ember-bg)',
+    color: 'var(--ember)',
+    border: '1px solid rgba(234,88,12,0.2)',
+  }
 
   return (
     <>
@@ -371,6 +376,12 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
               onMouseEnter={e => (e.currentTarget.style.background = 'var(--parchment-5)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             ><X size={16} strokeWidth={1.75} /></button>
+          </div>
+
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-5 text-xs"
+            style={aiBtnStyle}>
+            <Sparkles size={12} strokeWidth={1.75} className="shrink-0" />
+            Buttons with the sparkle icon use AI to auto-populate fields — tap them to save time.
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -632,8 +643,8 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
                   Upload File
                 </button>
                 <button type="button" onClick={handleSearchImages} disabled={!name.trim() || searchingImages}
-                  className="px-5 py-4 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5"
-                  style={photoMode === 'search' ? activeBtnStyle : inactiveBtnStyle}>
+                  className="px-5 py-4 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={aiBtnStyle}>
                   {searchingImages ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} strokeWidth={1.75} />}
                   Auto Search
                 </button>
@@ -759,7 +770,7 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
                 >
                   {fetching
                     ? <><Loader2 size={14} className="animate-spin" /> Fetching...</>
-                    : <><Link size={14} strokeWidth={1.75} /> Fetch</>}
+                    : <><Sparkles size={14} strokeWidth={1.75} /> Fetch</>}
                 </button>
                 {referenceUrl && (
                   <a
