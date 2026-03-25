@@ -168,74 +168,78 @@ function MealsPageInner() {
 
         {tab === 'dishes' ? (
           <>
-            {/* Row 1: Slot pills + Liked by + Search + Add Dish */}
-            <div className="px-8 py-2 flex items-center gap-2 shrink-0 overflow-x-auto"
+            {/* Row 1: Slot pills + Liked by (scrollable) | Search + Add Dish (pinned) */}
+            <div className="px-4 py-2 flex items-center gap-2 shrink-0"
               style={{ background: 'var(--parchment-3)', borderBottom: '1px solid var(--border)' }}>
-              <span className="text-xs font-medium shrink-0" style={{ color: 'var(--ink-4)' }}>Meal</span>
-              <button
-                onClick={() => setSlotFilter('')}
-                className="px-3 rounded-full text-sm font-medium shrink-0 transition-colors"
-                style={{
-                  height: 36,
-                  ...(!slotFilter
-                    ? { background: 'var(--ember)', color: '#fff' }
-                    : { background: 'var(--parchment-5)', color: 'var(--ink-3)', border: '1px solid var(--border)' }),
-                }}
-              >
-                All
-              </button>
-              {(['breakfast', 'lunch', 'snack', 'dinner'] as MealSlot[]).map(s => (
+              {/* Pills — scroll independently */}
+              <div className="flex items-center gap-2 flex-1 overflow-x-auto min-w-0 pl-4">
+                <span className="text-xs font-medium shrink-0" style={{ color: 'var(--ink-4)' }}>Meal</span>
                 <button
-                  key={s}
-                  onClick={() => setSlotFilter(prev => prev === s ? '' : s)}
+                  onClick={() => setSlotFilter('')}
                   className="px-3 rounded-full text-sm font-medium shrink-0 transition-colors"
                   style={{
                     height: 36,
-                    ...(slotFilter === s
+                    ...(!slotFilter
                       ? { background: 'var(--ember)', color: '#fff' }
                       : { background: 'var(--parchment-5)', color: 'var(--ink-3)', border: '1px solid var(--border)' }),
                   }}
                 >
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                  All
                 </button>
-              ))}
-              {/* Divider */}
-              <div className="shrink-0 self-stretch" style={{ width: 1, background: 'var(--border)', margin: '6px 4px' }} />
-              <span className="text-xs font-medium shrink-0" style={{ color: 'var(--ink-4)' }}>Liked by</span>
-              <button
-                onClick={() => setFavoritesFilter([])}
-                className="px-3 rounded-full text-sm font-medium shrink-0 transition-colors"
-                style={{
-                  height: 36,
-                  ...(favoritesFilter.length === 0
-                    ? { background: 'var(--ember)', color: '#fff' }
-                    : { background: 'var(--parchment-5)', color: 'var(--ink-3)', border: '1px solid var(--border)' }),
-                }}
-              >
-                All
-              </button>
-              {MEAL_MEMBERS.map(m => {
-                const active = favoritesFilter.includes(m.id)
-                return (
+                {(['breakfast', 'lunch', 'snack', 'dinner'] as MealSlot[]).map(s => (
                   <button
-                    key={m.id}
-                    onClick={() => setFavoritesFilter(prev =>
-                      prev.includes(m.id) ? prev.filter(id => id !== m.id) : [...prev, m.id]
-                    )}
-                    className="flex items-center gap-1.5 px-3 rounded-full text-sm font-medium shrink-0 transition-colors"
+                    key={s}
+                    onClick={() => setSlotFilter(prev => prev === s ? '' : s)}
+                    className="px-3 rounded-full text-sm font-medium shrink-0 transition-colors"
                     style={{
                       height: 36,
-                      ...(active
-                        ? { background: m.color.solid, color: '#fff' }
+                      ...(slotFilter === s
+                        ? { background: 'var(--ember)', color: '#fff' }
                         : { background: 'var(--parchment-5)', color: 'var(--ink-3)', border: '1px solid var(--border)' }),
                     }}
                   >
-                    <Heart size={12} strokeWidth={1.75} fill={active ? '#fff' : 'none'} style={{ color: active ? '#fff' : m.color.solid }} />
-                    {m.name}
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
                   </button>
-                )
-              })}
-              <div className="ml-auto flex items-center gap-3 shrink-0">
+                ))}
+                {/* Divider */}
+                <div className="shrink-0 self-stretch" style={{ width: 1, background: 'var(--border)', margin: '6px 4px' }} />
+                <span className="text-xs font-medium shrink-0" style={{ color: 'var(--ink-4)' }}>Liked by</span>
+                <button
+                  onClick={() => setFavoritesFilter([])}
+                  className="px-3 rounded-full text-sm font-medium shrink-0 transition-colors"
+                  style={{
+                    height: 36,
+                    ...(favoritesFilter.length === 0
+                      ? { background: 'var(--ember)', color: '#fff' }
+                      : { background: 'var(--parchment-5)', color: 'var(--ink-3)', border: '1px solid var(--border)' }),
+                  }}
+                >
+                  All
+                </button>
+                {MEAL_MEMBERS.map(m => {
+                  const active = favoritesFilter.includes(m.id)
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => setFavoritesFilter(prev =>
+                        prev.includes(m.id) ? prev.filter(id => id !== m.id) : [...prev, m.id]
+                      )}
+                      className="flex items-center gap-1.5 px-3 rounded-full text-sm font-medium shrink-0 transition-colors"
+                      style={{
+                        height: 36,
+                        ...(active
+                          ? { background: m.color.solid, color: '#fff' }
+                          : { background: 'var(--parchment-5)', color: 'var(--ink-3)', border: '1px solid var(--border)' }),
+                      }}
+                    >
+                      <Heart size={12} strokeWidth={1.75} fill={active ? '#fff' : 'none'} style={{ color: active ? '#fff' : m.color.solid }} />
+                      {m.name}
+                    </button>
+                  )
+                })}
+              </div>
+              {/* Actions — always visible */}
+              <div className="flex items-center gap-3 shrink-0 pl-2">
                 <div className="relative shrink-0">
                   <Search size={14} strokeWidth={1.75}
                     className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
@@ -249,7 +253,7 @@ function MealsPageInner() {
                     style={{ height: 36, background: 'var(--parchment-5)', color: 'var(--ink)', border: '1px solid var(--border-strong)' }}
                   />
                 </div>
-                <span className="text-sm" style={{ color: 'var(--ink-4)' }}>
+                <span className="text-sm shrink-0" style={{ color: 'var(--ink-4)' }}>
                   {filtered.length} dish{filtered.length !== 1 ? 'es' : ''}
                 </span>
                 <button
