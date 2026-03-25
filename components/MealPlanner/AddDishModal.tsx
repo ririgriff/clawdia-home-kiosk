@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { X, Sparkles, Loader2, Plus, Trash2, Link, Check, ChevronDown, ChevronUp, Search, ExternalLink } from 'lucide-react'
+import { X, Sparkles, Loader2, Plus, Trash2, Link, Check, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
 import { IDish, Ingredient, MealSlot, MEAL_SLOTS } from '@/lib/types'
 import { MEAL_MEMBERS } from '@/config/family'
 import { updateCategoryColors } from '@/lib/categoryColors'
@@ -387,11 +387,11 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
                     disabled={!name.trim() || searching || fetching}
                     className="px-4 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
                     style={{ minHeight: 44, background: 'var(--ember-bg)', color: 'var(--ember)', border: '1px solid rgba(234,88,12,0.2)' }}
-                    title="Search for recipes by dish name"
                   >
                     {searching
                       ? <Loader2 size={16} className="animate-spin" />
-                      : <Search size={16} strokeWidth={1.75} />}
+                      : <Sparkles size={16} strokeWidth={1.75} />}
+                    Recipe Search
                   </button>
                 </div>
               </div>
@@ -413,11 +413,11 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
                     disabled={!nameZh.trim() || searching || fetching}
                     className="px-4 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
                     style={{ minHeight: 44, background: 'var(--ember-bg)', color: 'var(--ember)', border: '1px solid rgba(234,88,12,0.2)' }}
-                    title="Search for recipes using local name"
                   >
                     {searching
                       ? <Loader2 size={16} className="animate-spin" />
-                      : <Search size={16} strokeWidth={1.75} />}
+                      : <Sparkles size={16} strokeWidth={1.75} />}
+                    Recipe Search
                   </button>
                 </div>
               </div>
