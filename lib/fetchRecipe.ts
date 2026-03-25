@@ -90,7 +90,7 @@ export async function fetchRecipeFromUrl(url: string): Promise<RecipeResult | { 
       const res = await fetch('https://api.tavily.com/extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TAVILY_KEY}` },
-        body: JSON.stringify({ urls: [url] }),
+        body: JSON.stringify({ urls: [url], include_images: true }),
         signal: AbortSignal.timeout(15000),
       })
       const data = await res.json()

@@ -154,6 +154,9 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
       } else if (fetchedImages.length > 1) {
         setImageSearchResults(fetchedImages)
         setPhotoMode('search')
+      } else if (!imageUrl) {
+        const dishName = data.name || name
+        if (dishName) handleSearchImages(dishName)
       }
       if (data.ingredients?.length) setIngredients(data.ingredients)
     } catch {
@@ -187,13 +190,14 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
 
   // ── Photo helpers ───────────────────────────────────────────────
 
-  async function handleSearchImages() {
-    if (!name.trim()) return
+  async function handleSearchImages(queryOverride?: string) {
+    const query = queryOverride ?? name
+    if (!query.trim()) return
     setPhotoMode('search')
     setSearchingImages(true)
     setImageSearchResults(null)
     try {
-      const res = await fetch(`/api/search-recipes?q=${encodeURIComponent(name.trim())}`)
+      const res = await fetch(`/api/search-recipes?q=${encodeURIComponent(query.trim())}`)
       if (!res.ok) throw new Error()
       const data = await res.json()
       setImageSearchResults(data.images ?? [])
