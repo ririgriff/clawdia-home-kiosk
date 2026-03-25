@@ -50,11 +50,13 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
   )
   const [referenceUrl, setReferenceUrl] = useState(existingDish?.reference_url ?? '')
 
-  const [photoMode, setPhotoMode] = useState<'url' | 'upload'>('url')
+  const [photoMode, setPhotoMode] = useState<'url' | 'upload' | 'search'>('url')
   const [imageUrl, setImageUrl] = useState(existingDish?.image_url ?? '')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [imageSearchResults, setImageSearchResults] = useState<string[] | null>(null)
+  const [searchingImages, setSearchingImages] = useState(false)
 
   // Taxonomy
   const [allCategories, setAllCategories] = useState<TaxonomyItem[]>([])
@@ -181,6 +183,30 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
 
   // ── Photo helpers ───────────────────────────────────────────────
 
+  async function handleSearchImages() {
+    if (!name.trim()) return
+    setPhotoMode('search')
+    setSearchingImages(true)
+    setImageSearchResults(null)
+    try {
+      const res = await fetch(`/api/search-recipes?q=${encodeURIComponent(name.trim())}`)
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      setImageSearchResults(data.images ?? [])
+    } catch {
+      setImageSearchResults([])
+    } finally {
+      setSearchingImages(false)
+    }
+  }
+
+  function handlePickSearchImage(url: string) {
+    setImageUrl(url)
+    setImageFile(null)
+    setImagePreview('')
+    setPhotoMode('url')
+  }
+
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -295,7 +321,7 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
     }
   }
 
-  const previewSrc = photoMode === 'url' ? imageUrl : imagePreview
+  const previewSrc = photoMode === 'upload' ? imagePreview : imageUrl
 
   const inputStyle = {
     background: 'var(--parchment-5)',
@@ -597,9 +623,15 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
                   style={photoMode === 'upload' ? activeBtnStyle : inactiveBtnStyle}>
                   Upload File
                 </button>
+                <button type="button" onClick={handleSearchImages} disabled={!name.trim() || searchingImages}
+                  className="px-5 py-4 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5"
+                  style={photoMode === 'search' ? activeBtnStyle : inactiveBtnStyle}>
+                  {searchingImages ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} strokeWidth={1.75} />}
+                  Auto Search
+                </button>
               </div>
 
-              {photoMode === 'url' ? (
+              {photoMode === 'url' && (
                 <input
                   type="url"
                   value={imageUrl}
@@ -608,7 +640,9 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
                   className="w-full rounded-xl px-5 py-4 outline-none focus:ring-1 focus:ring-orange-400"
                   style={inputStyle}
                 />
-              ) : (
+              )}
+
+              {photoMode === 'upload' && (
                 <div>
                   <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
                   <button
@@ -621,6 +655,30 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
                   >
                     {imageFile ? imageFile.name : 'Tap to choose a photo'}
                   </button>
+                </div>
+              )}
+
+              {photoMode === 'search' && (
+                <div>
+                  {searchingImages && (
+                    <p className="text-sm py-3" style={{ color: 'var(--ink-4)' }}>Searching for photos of "{name}"…</p>
+                  )}
+                  {!searchingImages && imageSearchResults !== null && imageSearchResults.length === 0 && (
+                    <p className="text-sm py-3" style={{ color: 'var(--ink-4)' }}>No photos found. Try pasting a URL instead.</p>
+                  )}
+                  {!searchingImages && imageSearchResults && imageSearchResults.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {imageSearchResults.map((url, i) => (
+                        <button key={i} type="button" onClick={() => handlePickSearchImage(url)}
+                          className="rounded-xl overflow-hidden transition-opacity hover:opacity-80"
+                          style={{ minHeight: 88, border: '2px solid transparent' }}>
+                          <img src={url} alt="" className="w-full h-full object-cover"
+                            style={{ minHeight: 88 }}
+                            onError={e => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none' }} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
