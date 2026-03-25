@@ -147,9 +147,13 @@ export default function AddDishModal({ existingDish, onClose, onCreated }: Props
       const data = await res.json()
       if (data.name && !name && typeof data.name === 'string') setName(data.name)
       if (data.recipe && typeof data.recipe === 'string') setRecipe(data.recipe)
-      if (data.image_url) {
-        if (!imageUrl) setImageUrl(data.image_url)
-        else setProposedImageUrl(data.image_url)
+      const fetchedImages: string[] = data.image_urls ?? (data.image_url ? [data.image_url] : [])
+      if (fetchedImages.length === 1) {
+        if (!imageUrl) setImageUrl(fetchedImages[0])
+        else setProposedImageUrl(fetchedImages[0])
+      } else if (fetchedImages.length > 1) {
+        setImageSearchResults(fetchedImages)
+        setPhotoMode('search')
       }
       if (data.ingredients?.length) setIngredients(data.ingredients)
     } catch {

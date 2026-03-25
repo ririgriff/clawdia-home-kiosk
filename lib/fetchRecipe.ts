@@ -78,7 +78,7 @@ export interface RecipeResult {
   name: string
   recipe: string
   ingredients: { name: string; quantity: string; unit: string }[]
-  image_url: string
+  image_urls: string[]
 }
 
 export async function fetchRecipeFromUrl(url: string): Promise<RecipeResult | { error: string }> {
@@ -96,9 +96,9 @@ export async function fetchRecipeFromUrl(url: string): Promise<RecipeResult | { 
       const data = await res.json()
       const result = data.results?.[0]
       if (result?.raw_content) {
-        const image_url = (result.images as string[] | undefined)?.[0] ?? ''
+        const image_urls = (result.images as string[] | undefined) ?? []
         const extracted = await claudeExtract(result.raw_content.slice(0, 20000))
-        return { ...extracted, image_url }
+        return { ...extracted, image_urls }
       }
     } catch { /* fall through to raw fetch */ }
   }
@@ -118,7 +118,7 @@ export async function fetchRecipeFromUrl(url: string): Promise<RecipeResult | { 
   const ogMatch =
     html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
     html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i)
-  const image_url = ogMatch?.[1] ?? ''
+  const image_urls = ogMatch?.[1] ? [ogMatch[1]] : []
 
   const jsonLd = extractJsonLdRecipe(html)
   if (jsonLd) {
@@ -127,9 +127,9 @@ export async function fetchRecipeFromUrl(url: string): Promise<RecipeResult | { 
       const nonAscii = /[^\x00-\x7F]/
       if (nonAscii.test(result.name) || nonAscii.test(result.recipe)) {
         const combined = `Dish name: ${result.name}\n\nIngredients:\n${result.ingredients.map(i => `${i.quantity} ${i.unit} ${i.name}`.trim()).join('\n')}\n\nInstructions:\n${result.recipe}`
-        try { return { ...(await claudeExtract(combined)), image_url } } catch { /* fall through */ }
+        try { return { ...(await claudeExtract(combined)), image_urls } } catch { /* fall through */ }
       }
-      return { ...result, image_url }
+      return { ...result, image_urls }
     }
   }
 
@@ -141,7 +141,7 @@ export async function fetchRecipeFromUrl(url: string): Promise<RecipeResult | { 
     .slice(0, 20000)
 
   try {
-    return { ...(await claudeExtract(stripped)), image_url }
+    return { ...(await claudeExtract(stripped)), image_urls }
   } catch {
     return { error: 'Could not parse recipe data' }
   }
