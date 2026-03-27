@@ -37,7 +37,11 @@ export async function GET(req: NextRequest) {
         'GET /api/agent/schema': 'Returns this document — fetch at startup to get current taxonomy and rules',
         'GET /api/agent/dishes': 'List all active (approved) dishes — use to check what already exists before submitting',
         'POST /api/agent/dishes': 'Submit a dish — always lands as pending for human review before going live',
-        'GET /api/agent/mealplan?date=YYYY-MM-DD': 'Get the meal plan for a specific day grouped by slot and who_for',
+        'GET /api/agent/mealplan?date=YYYY-MM-DD': 'Get the meal plan for a specific day grouped by slot — each entry includes an id field',
+        'GET /api/agent/mealplan?weekStart=YYYY-MM-DD': 'Get the full week meal plan (7 days) starting from the given Monday',
+        'POST /api/agent/mealplan': 'Add a dish to the meal plan',
+        'PUT /api/agent/mealplan?id=ENTRY_ID': 'Update eaters or note on a meal plan entry',
+        'DELETE /api/agent/mealplan?id=ENTRY_ID': 'Remove a dish from the meal plan',
         'GET /api/agent/skill?module=meals': 'Full skill prompt for meal planning workflows',
       },
       schedule: {

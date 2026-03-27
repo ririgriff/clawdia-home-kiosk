@@ -303,14 +303,15 @@ ${FAMILY_DESCRIPTION}
 
 ---
 
-### Workflow C — Summarise the meal plan for a day
+### Workflow C — Summarise the meal plan
 
-1. User asks what's planned (e.g. "what's for dinner tonight?", "what's on tomorrow?").
-2. Resolve the date to YYYY-MM-DD.
-3. Fetch: GET ${base}/api/agent/mealplan?date=YYYY-MM-DD
-4. Summarise in plain language. Example:
-   "Tomorrow: Charlie has congee and a boiled egg for breakfast, noodle soup for lunch, and steamed fish for dinner. Alice and Bob have the same dinner plus stir-fried broccoli."
-5. If a slot is empty, mention it: "Nothing planned for snack yet."
+1. User asks what's planned (e.g. "what's for dinner tonight?", "what's on this week?").
+2. For a single day: resolve the date to YYYY-MM-DD.
+   Fetch: GET ${base}/api/agent/mealplan?date=YYYY-MM-DD
+3. For a full week: resolve the Monday of that week to YYYY-MM-DD.
+   Fetch: GET ${base}/api/agent/mealplan?weekStart=YYYY-MM-DD
+   Response contains a \`week\` object keyed by date, each with \`slots\`.
+4. Summarise in plain language. If a slot is empty, say so.
 
 ---
 
@@ -327,7 +328,30 @@ ${FAMILY_DESCRIPTION}
    "[Dish name] · [Slot] · [Date] · For: [eaters]"
 7. POST ${base}/api/agent/mealplan with body:
    \`{ "dish_id": "<id>", "date": "YYYY-MM-DD", "slot": "dinner", "eaters": ["alice", "bob"] }\`
+   Response includes the entry \`id\` — save it if the user may want to remove or edit it.
 8. Confirm: "Added to the meal plan."
+
+---
+
+### Workflow E — Remove a dish from the meal plan
+
+1. User asks to remove something (e.g. "remove Tuesday's dinner", "take the pasta off Wednesday lunch").
+2. Fetch the day to find the entry: GET ${base}/api/agent/mealplan?date=YYYY-MM-DD
+3. Identify the entry by dish name and slot. Each entry includes an \`id\` field.
+4. Confirm with the user before deleting: "Remove [dish] from [slot] on [date]?"
+5. DELETE ${base}/api/agent/mealplan?id=ENTRY_ID
+6. Confirm: "Removed."
+
+---
+
+### Workflow F — Update a meal plan entry
+
+1. User wants to change who's eating or add a note (e.g. "add Alice to Friday's dinner", "note that the pasta is gluten-free").
+2. Fetch the day: GET ${base}/api/agent/mealplan?date=YYYY-MM-DD
+3. Identify the entry \`id\`.
+4. PUT ${base}/api/agent/mealplan?id=ENTRY_ID with body containing only the fields to change:
+   \`{ "eaters": ["alice", "bob"] }\` or \`{ "note": "make 5 portions" }\`
+5. Confirm: "Updated."
 
 ---
 
@@ -335,12 +359,15 @@ ${FAMILY_DESCRIPTION}
 
 All requests require: \`Authorization: Bearer <KIOSK_AGENT_KEY>\`
 
-| Action               | Method | URL |
-|----------------------|--------|-----|
-| List existing dishes | GET    | ${base}/api/agent/dishes |
-| Submit a dish        | POST   | ${base}/api/agent/dishes |
-| Get meal plan        | GET    | ${base}/api/agent/mealplan?date=YYYY-MM-DD |
-| Add dish to plan     | POST   | ${base}/api/agent/mealplan |
+| Action                    | Method | URL |
+|---------------------------|--------|-----|
+| List existing dishes      | GET    | ${base}/api/agent/dishes |
+| Submit a dish             | POST   | ${base}/api/agent/dishes |
+| Get meal plan (day)       | GET    | ${base}/api/agent/mealplan?date=YYYY-MM-DD |
+| Get meal plan (week)      | GET    | ${base}/api/agent/mealplan?weekStart=YYYY-MM-DD |
+| Add dish to plan          | POST   | ${base}/api/agent/mealplan |
+| Update meal plan entry    | PUT    | ${base}/api/agent/mealplan?id=ENTRY_ID |
+| Remove dish from plan     | DELETE | ${base}/api/agent/mealplan?id=ENTRY_ID |
 
 ### Dish fields (POST /api/agent/dishes body)
 
@@ -349,10 +376,11 @@ Optional: \`name_zh\`, \`tags\`, \`notes\`, \`typically_served\`, \`recipe\`, \`
 
 \`favorites\` is an array of member IDs who like this dish: e.g. \`["alice", "bob", "child1"]\`. Omit to default to all members. Pass a subset if the dish is only liked by specific people (e.g. a kids-only dish: \`["child1"]\`).
 
-### Meal plan entry fields (POST /api/agent/mealplan body)
+### Meal plan entry fields
 
-Required: \`dish_id\`, \`date\` (YYYY-MM-DD), \`slot\` (breakfast / lunch / snack / dinner)
-Optional: \`eaters\` (array of member IDs: ${MEAL_MEMBERS.map(m => m.id).join(', ')} — defaults to [])
+POST body — Required: \`dish_id\`, \`date\` (YYYY-MM-DD), \`slot\` (breakfast / lunch / snack / dinner)
+POST body — Optional: \`eaters\` (array of member IDs: ${MEAL_MEMBERS.map(m => m.id).join(', ')} — defaults to [])
+PUT body — Optional: \`eaters\`, \`note\` (one-time note for this specific planned instance)
 
 \`typically_served\` is an array of meal slots: \`breakfast\`, \`lunch\`, \`snack\`, \`dinner\`
 \`recipe\` is a plain-text string of numbered cooking steps — always populate this when submitting a dish
