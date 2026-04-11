@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'id is required' }, { status: 400 })
   }
 
-  const ALLOWED = ['notes', 'critical_notes', 'tags', 'available', 'typically_served', 'name', 'name_zh']
+  const ALLOWED = ['notes', 'critical_notes', 'tags', 'available', 'typically_served', 'name', 'name_zh', 'image_url']
   const update: Record<string, unknown> = {}
   for (const key of ALLOWED) {
     if (key in fields) update[key] = fields[key]
