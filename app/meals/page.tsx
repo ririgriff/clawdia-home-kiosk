@@ -446,7 +446,7 @@ function MealsPageInner() {
           </>
         ) : (
           /* ── Review tab ─────────────────────────────────────────────── */
-          <div className="flex-1 overflow-y-auto px-8 py-6">
+          <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-8 sm:py-6">
             {loading ? (
               <div className="flex items-center justify-center h-48">
                 <p style={{ color: 'var(--ink-4)' }}>Loading...</p>
@@ -469,7 +469,7 @@ function MealsPageInner() {
                       style={{ background: 'var(--parchment-3)', border: '1px solid var(--border-strong)' }}
                     >
                       {/* Thumbnail */}
-                      <div className="w-32 shrink-0" style={{ background: 'var(--parchment-5)' }}>
+                      <div className="w-24 sm:w-32 shrink-0" style={{ background: 'var(--parchment-5)' }}>
                         {dish.image_url
                           ? <img src={dish.image_url} alt={dish.name} className="w-full h-full object-cover" />
                           : <div className="w-full h-full flex items-center justify-center min-h-[120px]">
@@ -479,7 +479,7 @@ function MealsPageInner() {
                       </div>
 
                       {/* Content */}
-                      <div className="flex-1 p-5 flex flex-col gap-3 min-w-0">
+                      <div className="flex-1 p-3 sm:p-5 flex flex-col gap-3 min-w-0">
                         <div className="flex items-start justify-between gap-4">
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
@@ -516,33 +516,33 @@ function MealsPageInner() {
                         )}
 
                         {/* Actions */}
-                        <div className="flex gap-3 mt-auto pt-1">
+                        <div className="flex flex-wrap gap-2 mt-auto pt-1">
                           <button
                             onClick={() => approveDish(dish)}
-                            className="px-6 py-3 rounded-xl text-base font-medium transition-colors flex items-center gap-2"
-                            style={{ background: 'var(--sage-bg)', color: 'var(--sage)', border: '1px solid rgba(74,124,111,0.25)' }}
+                            className="flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                            style={{ minWidth: 100, background: 'var(--sage-bg)', color: 'var(--sage)', border: '1px solid rgba(74,124,111,0.25)' }}
                             onMouseEnter={e => (e.currentTarget.style.background = 'rgba(74,124,111,0.18)')}
                             onMouseLeave={e => (e.currentTarget.style.background = 'var(--sage-bg)')}
                           >
-                            <Check size={16} strokeWidth={2.5} /> Approve
+                            <Check size={15} strokeWidth={2.5} /> Approve
                           </button>
                           <button
                             onClick={() => setEditingPending(dish)}
-                            className="px-6 py-3 rounded-xl text-base font-medium transition-colors flex items-center gap-2"
-                            style={{ background: 'var(--parchment-5)', color: 'var(--ink-2)', border: '1px solid var(--border-strong)' }}
+                            className="flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                            style={{ minWidth: 130, background: 'var(--parchment-5)', color: 'var(--ink-2)', border: '1px solid var(--border-strong)' }}
                             onMouseEnter={e => (e.currentTarget.style.background = 'var(--parchment-4)')}
                             onMouseLeave={e => (e.currentTarget.style.background = 'var(--parchment-5)')}
                           >
-                            <SquarePen size={16} strokeWidth={1.75} /> Edit & Approve
+                            <SquarePen size={15} strokeWidth={1.75} /> Edit & Approve
                           </button>
                           <button
                             onClick={() => rejectDish(dish._id)}
-                            className="px-6 py-3 rounded-xl text-base font-medium transition-colors flex items-center gap-2"
-                            style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}
+                            className="px-4 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                            style={{ minWidth: 44, background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}
                             onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.14)')}
                             onMouseLeave={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
                           >
-                            <Trash2 size={16} strokeWidth={1.75} /> Reject
+                            <Trash2 size={15} strokeWidth={1.75} /> Reject
                           </button>
                         </div>
                       </div>
