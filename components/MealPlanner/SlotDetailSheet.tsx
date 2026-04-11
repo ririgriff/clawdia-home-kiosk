@@ -89,6 +89,9 @@ export default function SlotDetailSheet({ slot, date, entries, onClose, onRemove
                   <p className="text-base font-medium truncate" style={{ color: 'var(--ink)' }}>
                     {entry.dish?.name ?? 'Unknown'}
                   </p>
+                  {entry.dish?.name_zh && (
+                    <p className="text-sm truncate" style={{ color: 'var(--ink-3)' }}>{entry.dish.name_zh}</p>
+                  )}
                   <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                     {eaters.map(id => {
                       const c = getMemberColor(id)
