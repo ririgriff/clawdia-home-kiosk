@@ -355,6 +355,19 @@ ${FAMILY_DESCRIPTION}
 
 ---
 
+### Workflow G — Update a dish (image, notes, tags, etc.)
+
+1. User asks to update a field on an existing dish (e.g. "add a photo to the pasta dish", "update the notes on chicken rice").
+2. Fetch the dish list to find the ID: GET ${base}/api/agent/dishes
+3. Identify the dish. Confirm with the user if ambiguous.
+4. Tell the user what you're about to change and confirm before submitting.
+5. PATCH ${base}/api/agent/dishes with body:
+   \`{ "id": "<dish _id>", "<field>": "<value>" }\`
+   Include only the fields that are changing. Multiple fields can be updated in one call.
+6. Confirm: "Updated."
+
+---
+
 ### API endpoints
 
 All requests require: \`Authorization: Bearer <KIOSK_AGENT_KEY>\`
@@ -363,6 +376,7 @@ All requests require: \`Authorization: Bearer <KIOSK_AGENT_KEY>\`
 |---------------------------|--------|-----|
 | List existing dishes      | GET    | ${base}/api/agent/dishes |
 | Submit a dish             | POST   | ${base}/api/agent/dishes |
+| Update a dish             | PATCH  | ${base}/api/agent/dishes |
 | Get meal plan (day)       | GET    | ${base}/api/agent/mealplan?date=YYYY-MM-DD |
 | Get meal plan (week)      | GET    | ${base}/api/agent/mealplan?weekStart=YYYY-MM-DD |
 | Add dish to plan          | POST   | ${base}/api/agent/mealplan |
@@ -372,7 +386,14 @@ All requests require: \`Authorization: Bearer <KIOSK_AGENT_KEY>\`
 ### Dish fields (POST /api/agent/dishes body)
 
 Required: \`name\`, \`category\`
-Optional: \`name_zh\`, \`tags\`, \`notes\`, \`typically_served\`, \`recipe\`, \`ingredients\`, \`reference_url\`, \`favorites\`
+Optional: \`name_zh\`, \`tags\`, \`notes\`, \`critical_notes\`, \`typically_served\`, \`recipe\`, \`ingredients\`, \`reference_url\`, \`image_url\`, \`favorites\`
+
+### Updatable dish fields (PATCH /api/agent/dishes body)
+
+Required: \`id\` (dish \`_id\`)
+Updatable: \`name\`, \`name_zh\`, \`notes\`, \`critical_notes\`, \`tags\`, \`available\`, \`typically_served\`, \`image_url\`
+
+\`image_url\` should be a direct URL to the dish photo (e.g. a Cloudinary URL or any stable public image URL).
 
 \`favorites\` is an array of member IDs who like this dish: e.g. \`["alice", "bob", "child1"]\`. Omit to default to all members. Pass a subset if the dish is only liked by specific people (e.g. a kids-only dish: \`["child1"]\`).
 

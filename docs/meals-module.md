@@ -119,6 +119,7 @@ Stores categories and tags dynamically. Seeded on first load.
 | GET | `/api/agent/skill` | Returns full skill prompt for OpenClaw / multi-purpose agents |
 | GET | `/api/agent/dishes` | List active dishes (for duplicate checking) |
 | POST | `/api/agent/dishes` | Submit a dish — always lands as `pending` |
+| PATCH | `/api/agent/dishes` | Update fields on an existing dish — body: `{ id, ...fields }`; updatable: `name`, `name_zh`, `notes`, `critical_notes`, `tags`, `available`, `typically_served`, `image_url` |
 | GET | `/api/agent/mealplan?date=YYYY-MM-DD` | Get meal plan for a specific day, grouped by slot with eaters array per dish |
 | POST | `/api/agent/mealplan` | Add a dish to the meal plan — requires `dish_id`, `date`, `slot`; rejects if dish is still pending |
 
