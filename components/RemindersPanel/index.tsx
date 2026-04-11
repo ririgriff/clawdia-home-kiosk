@@ -227,7 +227,7 @@ function AddForm({ onAdd, onClose }: AddFormProps) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function RemindersPanel() {
+export default function RemindersPanel({ compact }: { compact?: boolean }) {
   const [todos,   setTodos]   = useState<ITodoItem[]>([])
   const [loading, setLoading] = useState(true)
   const [adding,  setAdding]  = useState(false)
@@ -314,6 +314,53 @@ export default function RemindersPanel() {
   }
 
   const handlers = { onToggle: toggle, onRemove: remove, onConvert: convert, onEdit: edit }
+
+  if (compact) {
+    const todayItems = todos
+      .filter(t => t.date === today)
+      .sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0))
+
+    return (
+      <div style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="px-4 shrink-0 flex items-center justify-between"
+          style={{ borderBottom: '1px solid var(--border)', background: 'var(--parchment-3)', minHeight: 56 }}>
+          <h2 className="font-display font-medium text-base" style={{ color: 'var(--ink)' }}>To-Do</h2>
+          <div className="flex items-center">
+            <Link href="/todo"
+              className="flex items-center justify-center rounded-lg"
+              style={{ minWidth: 44, minHeight: 44, color: 'var(--ink-4)' }}>
+              <ArrowUpRight size={18} strokeWidth={1.75} />
+            </Link>
+            <button onClick={() => setAdding(a => !a)}
+              className="flex items-center justify-center rounded-lg"
+              style={{
+                minWidth: 44, minHeight: 44,
+                ...(adding
+                  ? { background: 'var(--ember-bg)', color: 'var(--ember)' }
+                  : { color: 'var(--ink-3)' })
+              }}>
+              <Plus size={18} strokeWidth={2} />
+            </button>
+          </div>
+        </div>
+        {adding && <AddForm onAdd={addItem} onClose={() => setAdding(false)} />}
+        <div className="p-3 flex flex-col gap-4" style={{ background: 'var(--parchment-2)' }}>
+          {loading && (
+            <p className="text-sm text-center py-4" style={{ color: 'var(--ink-4)' }}>Loading…</p>
+          )}
+          {!loading && overdue.length > 0 && (
+            <div>
+              <p className="text-xs font-medium mb-2" style={{ color: '#dc2626' }}>Overdue</p>
+              <div className="flex flex-col gap-2">
+                {overdue.map(todo => <TodoRow key={todo._id} todo={todo} showDate {...handlers} />)}
+              </div>
+            </div>
+          )}
+          {!loading && <Section title="Today" items={todayItems} alwaysShow {...handlers} />}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="h-full flex flex-col overflow-hidden">

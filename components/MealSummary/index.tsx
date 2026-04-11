@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Eye, Trash2, X, Plus } from 'lucide-react'
+import { Eye, Trash2, X, Plus, ArrowUpRight } from 'lucide-react'
 import { IMealPlanEntry, MealSlot, MEAL_SLOTS } from '@/lib/types'
 import { getMemberInitials, getMemberColor } from '@/config/family'
 import DishViewSheet from '@/components/MealPlanner/DishViewSheet'
@@ -21,7 +21,7 @@ function getWeekStart(date: Date): string {
   return toDateString(d)
 }
 
-export default function MealSummary() {
+export default function MealSummary({ compact }: { compact?: boolean }) {
   const [entries, setEntries] = useState<IMealPlanEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [activeDay, setActiveDay] = useState<'today' | 'tomorrow'>('today')
@@ -64,6 +64,53 @@ export default function MealSummary() {
     { date: today,    label: "Today's Meals",    key: 'today' as const },
     { date: tomorrow, label: "Tomorrow's Meals", key: 'tomorrow' as const },
   ]
+
+  if (compact) {
+    return (
+      <div style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="px-4 flex items-center justify-between"
+          style={{ background: 'var(--parchment-3)', borderBottom: '1px solid var(--border)', minHeight: 56 }}>
+          <h2 className="font-display font-medium text-base" style={{ color: 'var(--ink)' }}>Today's Meals</h2>
+          <Link href="/plan"
+            className="flex items-center justify-center rounded-lg"
+            style={{ minWidth: 44, minHeight: 44, color: 'var(--ink-4)' }}>
+            <ArrowUpRight size={18} strokeWidth={1.75} />
+          </Link>
+        </div>
+        {loading ? (
+          <div className="px-4 py-3 text-sm" style={{ color: 'var(--ink-4)' }}>Loading...</div>
+        ) : (
+          <div>
+            {MEAL_SLOTS.map(slot => {
+              const slotEntries = entries.filter(e => e.date === today && e.slot === slot.value)
+              return (
+                <div key={slot.value} className="flex items-center gap-3 px-4"
+                  style={{ borderBottom: '1px solid var(--border)', minHeight: 48 }}>
+                  <span className="text-xs font-medium uppercase tracking-wide shrink-0"
+                    style={{ width: 68, color: 'var(--ink-4)' }}>
+                    {slot.label}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    {slotEntries.length === 0
+                      ? <span className="text-sm" style={{ color: 'var(--ink-4)' }}>—</span>
+                      : <span className="text-sm" style={{ color: 'var(--ink)' }}>
+                          {slotEntries.map(e => e.dish?.name).filter(Boolean).join(', ')}
+                        </span>
+                    }
+                  </div>
+                  <Link href={`/plan?date=${today}&slot=${slot.value}`}
+                    className="flex items-center justify-center rounded-lg shrink-0"
+                    style={{ minWidth: 44, minHeight: 44, color: 'var(--ink-4)' }}>
+                    <Plus size={14} strokeWidth={2} />
+                  </Link>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   if (loading) {
     return (

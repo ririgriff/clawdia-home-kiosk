@@ -28,7 +28,7 @@ const GO_HOME_CONFIG: Record<HomeMethod, { label: string; sub: string; icon: typ
   'pickup':  { label: 'Pickup',  sub: 'adult collection needed', icon: Car, color: '#c2410c', border: 'rgba(234,88,12,0.45)'   },
 }
 
-export default function ScheduleSummary() {
+export default function ScheduleSummary({ compact }: { compact?: boolean }) {
   const today    = toDateStr(new Date())
   const tomorrow = toDateStr(new Date(Date.now() + 86400000))
 
@@ -103,6 +103,54 @@ export default function ScheduleSummary() {
         return true
       })
     })
+  }
+
+  if (compact) {
+    const todayEvents = eventsByDate[today] ?? []
+    const todayMethod = !loading && ENABLE_GO_HOME ? computeHomeMethod(allEvents, today, homeDefaults) : null
+    const goCfg = todayMethod ? GO_HOME_CONFIG[todayMethod] : null
+
+    return (
+      <div style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="px-4 shrink-0 flex items-center justify-between"
+          style={{ borderBottom: '1px solid var(--border)', background: 'var(--parchment-3)', minHeight: 56 }}>
+          <h2 className="font-display font-medium text-base" style={{ color: 'var(--ink)' }}>Today's Schedule</h2>
+          <Link href="/schedule"
+            className="flex items-center justify-center rounded-lg"
+            style={{ minWidth: 44, minHeight: 44, color: 'var(--ink-4)' }}>
+            <ArrowUpRight size={18} strokeWidth={1.75} />
+          </Link>
+        </div>
+        <div className="p-4">
+          {loading ? (
+            <div className="text-sm" style={{ color: 'var(--ink-4)' }}>Loading…</div>
+          ) : todayEvents.length === 0 ? (
+            <div className="rounded-2xl px-4 py-4 text-sm text-center"
+              style={{ background: 'var(--parchment-3)', border: '1px solid var(--border)', color: 'var(--ink-4)' }}>
+              Nothing scheduled today
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {todayEvents.map(e => <EventRow key={e._id} event={e} onRemove={removeEventFromState} />)}
+            </div>
+          )}
+        </div>
+        {!loading && ENABLE_GO_HOME && goCfg && (() => {
+          const Icon = goCfg.icon
+          return (
+            <div className="flex items-center gap-2.5 px-4 py-2.5"
+              style={{ background: '#fef08a', borderTop: '1px solid rgba(0,0,0,0.1)' }}>
+              <div className="flex items-center gap-1.5 rounded-lg px-2.5 py-1"
+                style={{ background: '#fff', border: `1px solid ${goCfg.border}` }}>
+                <Icon size={13} strokeWidth={2} style={{ color: goCfg.color }} />
+                <span className="text-xs font-semibold" style={{ color: goCfg.color }}>{goCfg.label}</span>
+                <span className="text-xs" style={{ color: goCfg.color, opacity: 0.6 }}>· {goCfg.sub}</span>
+              </div>
+            </div>
+          )
+        })()}
+      </div>
+    )
   }
 
   return (
