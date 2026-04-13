@@ -59,6 +59,12 @@ export default function ClawdiaChat() {
   }, [])
 
   useEffect(() => {
+    const handler = () => setIsOpen(true)
+    window.addEventListener('clawdia:open', handler)
+    return () => window.removeEventListener('clawdia:open', handler)
+  }, [])
+
+  useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [messages, streamingText, toolActivity])
 
@@ -155,32 +161,23 @@ export default function ClawdiaChat() {
 
     const recognition = new SR()
     recognition.lang = 'en-US'
-    recognition.continuous = true
-    recognition.interimResults = false  // final results only — interim is unreliable on Android/iOS
+    recognition.continuous = false  // continuous mode is unreliable on Android WebView
+    recognition.interimResults = false
 
     let finalTranscript = ''
-    let silenceTimer: ReturnType<typeof setTimeout> | null = null
-
-    function resetSilenceTimer() {
-      if (silenceTimer) clearTimeout(silenceTimer)
-      silenceTimer = setTimeout(() => recognition.stop(), 1500)
-    }
 
     recognition.onresult = e => {
       for (let i = e.resultIndex; i < e.results.length; i++) {
         finalTranscript += e.results[i][0].transcript + ' '
       }
       setInput(finalTranscript.trim())
-      resetSilenceTimer()
     }
 
     recognition.onerror = () => {
-      if (silenceTimer) clearTimeout(silenceTimer)
       setIsListening(false)
     }
 
     recognition.onend = () => {
-      if (silenceTimer) clearTimeout(silenceTimer)
       setIsListening(false)
       const text = finalTranscript.trim()
       if (text) { setInput(''); sendMessage(text) }
@@ -212,22 +209,23 @@ export default function ClawdiaChat() {
           50%       { transform: scaleY(1);   }
         }
       `}</style>
-      {/* Floating trigger button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 rounded-full shadow-xl transition-transform active:scale-95"
-        style={{
-          width: 128, height: 128,
-          border: '3px solid #fff',
-          display: isOpen ? 'none' : 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#a8d5a2',
-        }}
-        title={`${APP_NAME} Chat`}
-      >
-        <Image src={MASCOT_FACE} alt={`${APP_NAME} Chat`} width={128} height={128} className="object-contain" />
-      </button>
+      {/* Floating trigger button — desktop only */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="hidden sm:flex fixed bottom-6 right-6 z-40 rounded-full shadow-xl transition-transform active:scale-95"
+          style={{
+            width: 128, height: 128,
+            border: '3px solid #fff',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#a8d5a2',
+          }}
+          title={`${APP_NAME} Chat`}
+        >
+          <Image src={MASCOT_FACE} alt={`${APP_NAME} Chat`} width={128} height={128} className="object-contain" />
+        </button>
+      )}
 
       {/* Chat panel */}
       {isOpen && (

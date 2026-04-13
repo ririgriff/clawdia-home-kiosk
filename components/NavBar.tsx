@@ -71,6 +71,14 @@ export default function NavBar({ activePath }: Props) {
           })}
         </div>
         <div className="ml-auto flex items-center gap-3">
+          <button
+            onClick={() => window.dispatchEvent(new Event('clawdia:open'))}
+            className="sm:hidden flex items-center justify-center rounded-xl"
+            style={{ minWidth: 44, minHeight: 44 }}
+            title={`${APP_NAME} Chat`}
+          >
+            <Image src={MASCOT_FACE} alt={`${APP_NAME} Chat`} width={28} height={28} />
+          </button>
           <button onClick={() => window.location.reload()}
             className="flex items-center justify-center rounded-xl transition-colors"
             style={{ minWidth: 44, minHeight: 44, color: 'var(--ink-4)' }}>
