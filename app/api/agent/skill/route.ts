@@ -284,11 +284,13 @@ ${FAMILY_DESCRIPTION}
 ### Workflow A — Add a specific dish
 
 1. User names a dish or shares a URL.
-2. Use your web tools to look up the recipe (ingredients, recipe/method, URL for a nice photo, Chinese name if applicable).
+2. Use your web tools to look up the recipe (ingredients, recipe/method, Chinese name if applicable).
+   Also search for a high-quality photo of the dish and note the direct image URL — this will be sent as \`image_url\`.
+   Prefer stable image sources (recipe sites, food blogs). The URL must end in an image extension (.jpg, .png, .webp) or be a direct Cloudinary URL.
 3. Fetch existing dishes to check for duplicates: GET ${base}/api/agent/dishes
 4. Map the dish to the taxonomy below.
-5. Tell the user what you're about to submit. If anything is unclear, ask before sending.
-6. Submit the dish (see API section below).
+5. Tell the user what you're about to submit (including the photo URL if found). If anything is unclear, ask before sending.
+6. Submit the dish — always include \`image_url\` if you found one (see API section below).
 7. Confirm: "Added — it's pending your review in the app."
 
 ---
@@ -360,11 +362,13 @@ ${FAMILY_DESCRIPTION}
 1. User asks to update a field on an existing dish (e.g. "add a photo to the pasta dish", "update the notes on chicken rice").
 2. Fetch the dish list to find the ID: GET ${base}/api/agent/dishes
 3. Identify the dish. Confirm with the user if ambiguous.
-4. Tell the user what you're about to change and confirm before submitting.
-5. PATCH ${base}/api/agent/dishes with body:
+4. If updating the image (\`image_url\`): use your web tools to search for a high-quality photo of the dish.
+   Find a direct image URL (ending in .jpg, .png, .webp, or a Cloudinary URL). Show it to the user before submitting.
+5. Tell the user what you're about to change and confirm before submitting.
+6. PATCH ${base}/api/agent/dishes with body:
    \`{ "id": "<dish _id>", "<field>": "<value>" }\`
    Include only the fields that are changing. Multiple fields can be updated in one call.
-6. Confirm: "Updated."
+7. Confirm: "Updated."
 
 ---
 
