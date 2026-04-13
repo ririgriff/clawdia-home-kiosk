@@ -308,12 +308,12 @@ export default function RecipeDrawer({
                 <button
                   key={t.value}
                   onClick={() => setSelectedTags(prev =>
-                    prev.includes(t.value) ? prev.filter(v => v !== t.value) : [...prev, t.value]
+                    prev.includes(t.label) ? prev.filter(v => v !== t.label) : [...prev, t.label]
                   )}
                   className="px-3 rounded-full text-sm font-medium shrink-0 transition-colors"
                   style={{
                     height: 36,
-                    ...(selectedTags.includes(t.value)
+                    ...(selectedTags.includes(t.label)
                       ? { background: 'var(--ember)', color: '#fff' }
                       : { background: 'var(--parchment-5)', color: 'var(--ink-3)', border: '1px solid var(--border)' }),
                   }}
