@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const status = request.nextUrl.searchParams.get('status')
 
   let filter: Record<string, unknown>
-  let sortOrder: Record<string, unknown>
+  let sortOrder: Record<string, 1 | -1>
 
   if (status === 'pending') {
     filter = { status: 'pending', deletedAt: null }
