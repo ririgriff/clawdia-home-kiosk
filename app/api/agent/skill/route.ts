@@ -99,12 +99,14 @@ ${ENABLE_GO_HOME ? `5. For any weekday, you can also check how the school child 
 3. Identify the event. Confirm with the user before deleting.
 4. ⚠️ If the event is recurring (ID contains _YYYY-MM-DD), ask the user which scope:
    - "Just this date" → mode=single
+   - "Just this date range" → mode=range&from=YYYY-MM-DD&to=YYYY-MM-DD
    - "This date and all future occurrences" → mode=following
    - "The entire series" → mode=all
 5. Call DELETE with the appropriate mode:
    - DELETE ${base}/api/agent/schedule?id=EVENT_ID&mode=all           (entire series)
    - DELETE ${base}/api/agent/schedule?id=EVENT_ID&mode=single&date=YYYY-MM-DD
    - DELETE ${base}/api/agent/schedule?id=EVENT_ID&mode=following&date=YYYY-MM-DD
+   - DELETE ${base}/api/agent/schedule?id=EVENT_ID&mode=range&from=YYYY-MM-DD&to=YYYY-MM-DD
    Use the instance date (the YYYY-MM-DD suffix of the recurring ID) as the date param.
 6. Confirm: "Removed from the calendar."
 
@@ -123,6 +125,7 @@ All requests require: \`Authorization: Bearer <KIOSK_AGENT_KEY>\`
 | Delete (entire series)   | DELETE | ${base}/api/agent/schedule?id=EVENT_ID&mode=all |
 | Delete (one instance)    | DELETE | ${base}/api/agent/schedule?id=EVENT_ID&mode=single&date=YYYY-MM-DD |
 | Delete (this + following)| DELETE | ${base}/api/agent/schedule?id=EVENT_ID&mode=following&date=YYYY-MM-DD |
+| Delete (date range)      | DELETE | ${base}/api/agent/schedule?id=EVENT_ID&mode=range&from=YYYY-MM-DD&to=YYYY-MM-DD |
 ${ENABLE_GO_HOME ? `| Get school child home method | GET    | ${base}/api/agent/go-home?date=YYYY-MM-DD |` : ''}
 
 ---

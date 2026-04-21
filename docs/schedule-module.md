@@ -207,10 +207,11 @@ All routes require `Authorization: Bearer <AGENT_API_KEY>`.
 | DELETE | `/api/agent/schedule?id=EVENT_ID&mode=all` | Delete entire series |
 | DELETE | `/api/agent/schedule?id=EVENT_ID&mode=single&date=YYYY-MM-DD` | Skip one instance (adds to exceptions[]) |
 | DELETE | `/api/agent/schedule?id=EVENT_ID&mode=following&date=YYYY-MM-DD` | Truncate series from date onwards |
+| DELETE | `/api/agent/schedule?id=EVENT_ID&mode=range&from=YYYY-MM-DD&to=YYYY-MM-DD` | Skip all dates in a contiguous range (adds each date to exceptions[]) |
 
 GET responses expand recurring events into instances with synthetic IDs (`<mongoId>_YYYY-MM-DD`). `exceptions[]` is respected — deleted-by-exception instances are not returned.
 
-Skill prompt is served at `GET /api/agent/skill?module=schedule`. The agent is instructed to ask the user which delete scope applies before calling DELETE on a recurring event.
+Skill prompt is served at `GET /api/agent/skill?module=schedule`. The agent is instructed to ask the user which delete scope applies before calling DELETE on a recurring event. Use `mode=range` when the user specifies a multi-day absence (e.g. a class trip) to suppress all affected instances in a single call.
 
 ---
 

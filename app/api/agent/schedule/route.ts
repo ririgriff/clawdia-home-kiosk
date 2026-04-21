@@ -141,11 +141,12 @@ export async function PUT(req: NextRequest) {
   return NextResponse.json({ success: true, event: { ...updated, _id: updated._id.toString() } })
 }
 
-// DELETE /api/agent/schedule?id=EVENT_ID&mode=all|single|following&date=YYYY-MM-DD
+// DELETE /api/agent/schedule?id=EVENT_ID&mode=all|single|following|range&date=YYYY-MM-DD
 //
-// mode=all (default)       — delete entire series
-// mode=single&date=...     — skip just this date (adds to exceptions[])
-// mode=following&date=...  — truncate series: set recurrence.until to day before date
+// mode=all (default)                    — delete entire series
+// mode=single&date=...                  — skip just this date (adds to exceptions[])
+// mode=following&date=...               — truncate series: set recurrence.until to day before date
+// mode=range&from=...&to=...            — skip all dates in range (adds each to exceptions[])
 export async function DELETE(req: NextRequest) {
   if (!verifyAgent(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -177,6 +178,27 @@ export async function DELETE(req: NextRequest) {
     const updated = await ScheduleEvent.findByIdAndUpdate(baseId, { $set: { 'recurrence.until': until } }, { new: true })
     if (!updated) return NextResponse.json({ error: 'Event not found' }, { status: 404 })
     return NextResponse.json({ success: true, mode: 'following', until })
+  }
+
+  if (mode === 'range') {
+    const from = params.get('from')
+    const to   = params.get('to')
+    if (!from || !to) {
+      return NextResponse.json({ error: 'from and to params (YYYY-MM-DD) are required for mode=range' }, { status: 400 })
+    }
+    const event = await ScheduleEvent.findById(baseId)
+    if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    const cursor = new Date(from + 'T12:00:00')
+    const end    = new Date(to   + 'T12:00:00')
+    const newDates: string[] = []
+    while (cursor <= end) {
+      const d = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`
+      newDates.push(d)
+      cursor.setDate(cursor.getDate() + 1)
+    }
+    const exceptions = [...new Set([...(event.exceptions ?? []), ...newDates])]
+    await ScheduleEvent.findByIdAndUpdate(baseId, { $set: { exceptions } })
+    return NextResponse.json({ success: true, mode: 'range', from, to, exceptions_added: newDates.length })
   }
 
   // mode=all
