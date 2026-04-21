@@ -3,6 +3,18 @@ import type { NextRequest } from 'next/server'
 
 const PUBLIC_PATHS = ['/pin', '/api/auth', '/api/agent', '/api/cron', '/api/ical', '/_next/image']
 
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' blob: data: https:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+].join("; ")
+
 async function computeExpectedToken(): Promise<string> {
   const pin = process.env.KIOSK_PIN ?? ''
   const salt = process.env.AUTH_SALT ?? 'kiosk-default-salt'
@@ -13,11 +25,16 @@ async function computeExpectedToken(): Promise<string> {
     .join('')
 }
 
+function withCSP(response: NextResponse): NextResponse {
+  response.headers.set('Content-Security-Policy', CSP)
+  return response
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (PUBLIC_PATHS.some(p => pathname.startsWith(p))) {
-    return NextResponse.next()
+    return withCSP(NextResponse.next())
   }
 
   // Pass through static assets (images, fonts, etc.)
@@ -32,7 +49,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/pin', request.url))
   }
 
-  return NextResponse.next()
+  return withCSP(NextResponse.next())
 }
 
 export const config = {
