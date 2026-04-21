@@ -19,17 +19,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 })
   }
 
-  const bytes = await file.arrayBuffer()
-  const buffer = Buffer.from(bytes)
+  try {
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
 
-  const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
-    cloudinary.uploader
-      .upload_stream({ folder: 'home-kiosk/dishes' }, (error, result) => {
-        if (error || !result) reject(error ?? new Error('Upload failed'))
-        else resolve(result as { secure_url: string })
-      })
-      .end(buffer)
-  })
+    const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream({ folder: 'home-kiosk/dishes' }, (error, result) => {
+          if (error || !result) reject(error ?? new Error('Upload failed'))
+          else resolve(result as { secure_url: string })
+        })
+        .end(buffer)
+    })
 
-  return NextResponse.json({ url: result.secure_url })
+    return NextResponse.json({ url: result.secure_url })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Upload failed'
+    console.error('[upload] Cloudinary error:', message)
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }
