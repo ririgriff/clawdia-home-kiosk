@@ -5,12 +5,24 @@ import { Dish } from '@/lib/models/Dish'
 export async function GET(request: NextRequest) {
   await connectDB()
   const status = request.nextUrl.searchParams.get('status')
-  const filter = status === 'pending'
-    ? { status: 'pending' }
-    : { status: { $ne: 'pending' } }
+
+  let filter: Record<string, unknown>
+  let sortOrder: Record<string, unknown>
+
+  if (status === 'pending') {
+    filter = { status: 'pending', deletedAt: null }
+    sortOrder = { createdAt: -1 }
+  } else if (status === 'deleted') {
+    filter = { deletedAt: { $ne: null } }
+    sortOrder = { deletedAt: -1 }
+  } else {
+    filter = { status: { $ne: 'pending' }, deletedAt: null }
+    sortOrder = { name: 1 }
+  }
+
   const dishes = await Dish.find(filter)
     .select('-recipe -notes')
-    .sort(status === 'pending' ? { createdAt: -1 } : { name: 1 })
+    .sort(sortOrder)
     .lean()
   return NextResponse.json(dishes)
 }

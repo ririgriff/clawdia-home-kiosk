@@ -84,6 +84,7 @@ export interface IDish {
   status?: 'active' | 'pending'
   source?: 'manual' | 'agent'
   createdAt?: string
+  deletedAt?: string | null
 }
 
 export type LinkCategory = 'kids' | 'food' | 'other'

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Plus, UtensilsCrossed, Pencil, CheckCircle2, XCircle, Search, Check, Trash2, Bot, SquarePen, Heart } from 'lucide-react'
+import { Plus, UtensilsCrossed, Pencil, CheckCircle2, XCircle, Search, Check, Trash2, Bot, SquarePen, Heart, RotateCcw } from 'lucide-react'
 import NavBar from '@/components/NavBar'
 import AddDishModal from '@/components/MealPlanner/AddDishModal'
 import FavoriteHearts from '@/components/FavoriteHearts'
@@ -12,7 +12,7 @@ import { MEAL_MEMBERS } from '@/config/family'
 
 interface TaxonomyItem { _id: string; type: 'category' | 'tag'; value: string; label: string; color: string }
 
-type Tab = 'dishes' | 'review'
+type Tab = 'dishes' | 'review' | 'deleted'
 
 export default function MealsPage() {
   return (
@@ -28,6 +28,7 @@ function MealsPageInner() {
   const [tab, setTab] = useState<Tab>('dishes')
   const [dishes, setDishes] = useState<IDish[]>([])
   const [pending, setPending] = useState<IDish[]>([])
+  const [deleted, setDeleted] = useState<IDish[]>([])
   const [search, setSearch] = useState('')
   const [slotFilter, setSlotFilter] = useState<MealSlot | ''>('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
@@ -41,9 +42,10 @@ function MealsPageInner() {
   const [loading, setLoading] = useState(true)
 
   const fetchAll = useCallback(async () => {
-    const [dishRes, pendingRes, taxRes] = await Promise.all([
+    const [dishRes, pendingRes, deletedRes, taxRes] = await Promise.all([
       fetch('/api/dishes'),
       fetch('/api/dishes?status=pending'),
+      fetch('/api/dishes?status=deleted'),
       fetch('/api/taxonomy'),
     ])
     const taxData: TaxonomyItem[] = await taxRes.json()
@@ -54,6 +56,7 @@ function MealsPageInner() {
     updateCategoryColors(cats)
     setDishes(await dishRes.json())
     setPending(await pendingRes.json())
+    setDeleted(await deletedRes.json())
     setLoading(false)
   }, [])
 
@@ -109,13 +112,49 @@ function MealsPageInner() {
   }
 
   async function rejectDish(dishId: string) {
-    await fetch(`/api/dishes/${dishId}`, { method: 'DELETE' })
+    const dish = pending.find(d => d._id === dishId)
     setPending(prev => prev.filter(d => d._id !== dishId))
+    if (dish) setDeleted(prev => [{ ...dish, deletedAt: new Date().toISOString() }, ...prev])
+    const res = await fetch(`/api/dishes/${dishId}`, { method: 'DELETE' })
+    if (!res.ok) {
+      if (dish) {
+        setPending(prev => [...prev, dish])
+        setDeleted(prev => prev.filter(d => d._id !== dishId))
+      }
+    }
   }
 
   async function deleteDish(dishId: string) {
-    await fetch(`/api/dishes/${dishId}`, { method: 'DELETE' })
+    const dish = dishes.find(d => d._id === dishId)
     setDishes(prev => prev.filter(d => d._id !== dishId))
+    if (dish) setDeleted(prev => [{ ...dish, deletedAt: new Date().toISOString() }, ...prev])
+    const res = await fetch(`/api/dishes/${dishId}`, { method: 'DELETE' })
+    if (!res.ok) {
+      if (dish) {
+        setDishes(prev => [...prev, dish].sort((a, b) => a.name.localeCompare(b.name)))
+        setDeleted(prev => prev.filter(d => d._id !== dishId))
+      }
+    }
+  }
+
+  async function restoreDish(dishId: string) {
+    const dish = deleted.find(d => d._id === dishId)
+    setDeleted(prev => prev.filter(d => d._id !== dishId))
+    const res = await fetch(`/api/dishes/${dishId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deletedAt: null }),
+    })
+    if (res.ok) {
+      const restored: IDish = await res.json()
+      if (restored.status !== 'pending') {
+        setDishes(prev => [...prev, restored].sort((a, b) => a.name.localeCompare(b.name)))
+      } else {
+        setPending(prev => [...prev, restored])
+      }
+    } else {
+      if (dish) setDeleted(prev => [...prev, dish])
+    }
   }
 
   // ── Filter ───────────────────────────────────────────────────────────────
@@ -145,6 +184,7 @@ function MealsPageInner() {
           {([
             { key: 'dishes', label: 'Dishes', count: null },
             { key: 'review', label: 'Review', count: pending.length },
+            { key: 'deleted', label: 'Deleted', count: deleted.length },
           ] as { key: Tab; label: string; count: number | null }[]).map(t => (
             <button
               key={t.key}
@@ -158,7 +198,9 @@ function MealsPageInner() {
               {t.label}
               {t.count !== null && t.count > 0 && (
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                  style={{ background: 'var(--ember)', color: '#fff' }}>
+                  style={t.key === 'deleted'
+                    ? { background: 'var(--parchment-5)', color: 'var(--ink-3)', border: '1px solid var(--border)' }
+                    : { background: 'var(--ember)', color: '#fff' }}>
                   {t.count}
                 </span>
               )}
@@ -444,7 +486,7 @@ function MealsPageInner() {
               )}
             </div>
           </>
-        ) : (
+        ) : tab === 'review' ? (
           /* ── Review tab ─────────────────────────────────────────────── */
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-8 sm:py-6">
             {loading ? (
@@ -549,6 +591,57 @@ function MealsPageInner() {
                     </div>
                   )
                 })}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ── Deleted tab ────────────────────────────────────────────── */
+          <div className="flex-1 overflow-y-auto">
+            {loading ? (
+              <div className="flex items-center justify-center h-48">
+                <p style={{ color: 'var(--ink-4)' }}>Loading...</p>
+              </div>
+            ) : deleted.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-48 gap-2">
+                <Trash2 size={32} strokeWidth={1.25} style={{ color: 'var(--ink-4)' }} />
+                <p className="text-base" style={{ color: 'var(--ink-4)' }}>No deleted dishes</p>
+              </div>
+            ) : (
+              <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+                {deleted.map(dish => (
+                  <div key={dish._id}
+                    className="aspect-square rounded-2xl overflow-hidden flex flex-col"
+                    style={{ background: 'var(--parchment-3)', border: '1px solid var(--border)', opacity: 0.7 }}
+                  >
+                    {/* Image */}
+                    <div className="relative shrink-0" style={{ height: '62%', background: 'var(--parchment-5)' }}>
+                      {dish.image_url
+                        ? <img src={dish.image_url} alt={dish.name} className="w-full h-full object-cover grayscale" />
+                        : <div className="w-full h-full flex items-center justify-center">
+                            <UtensilsCrossed size={28} strokeWidth={1.25} style={{ color: 'var(--ink-4)' }} />
+                          </div>
+                      }
+                    </div>
+                    {/* Info */}
+                    <div className="flex-1 min-h-0 px-2 pt-1.5 pb-2 flex flex-col overflow-hidden">
+                      <div className="flex-1 min-h-0 overflow-hidden">
+                        <p className="text-xs font-semibold leading-tight" style={{ color: 'var(--ink)' }}>{dish.name}</p>
+                        {dish.name_zh && (
+                          <p className="text-xs leading-tight mt-0.5" style={{ color: 'var(--ink-3)' }}>{dish.name_zh}</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => restoreDish(dish._id)}
+                        className="w-full flex items-center justify-center gap-1.5 rounded-lg text-xs font-medium transition-colors mt-1"
+                        style={{ background: 'var(--sage-bg)', color: 'var(--sage)', border: '1px solid rgba(74,124,111,0.2)', minHeight: 36 }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(74,124,111,0.18)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'var(--sage-bg)')}
+                      >
+                        <RotateCcw size={11} strokeWidth={2} /> Restore
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

@@ -31,6 +31,6 @@ export async function DELETE(
 ) {
   const { id } = await params
   await connectDB()
-  await Dish.findByIdAndDelete(id)
+  await Dish.findByIdAndUpdate(id, { $set: { deletedAt: new Date() } })
   return NextResponse.json({ success: true })
 }

@@ -30,6 +30,7 @@ const DishSchema = new Schema<IDish>(
     favorites:  { type: [{ type: String }], default: () => MEAL_MEMBERS.map(m => m.id) },
     status:     { type: String, enum: ['active', 'pending'], default: 'active' },
     source:     { type: String, enum: ['manual', 'agent'], default: 'manual' },
+    deletedAt:  { type: Date, default: null },
   },
   { timestamps: true }
 )
